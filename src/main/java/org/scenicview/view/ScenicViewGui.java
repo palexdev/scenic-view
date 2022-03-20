@@ -1,6 +1,6 @@
 /*
- * Scenic View, 
- * Copyright (C) 2012 Jonathan Giles, Ander Ruiz, Amy Fowler 
+ * Scenic View,
+ * Copyright (C) 2012 Jonathan Giles, Ander Ruiz, Amy Fowler
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,64 +17,27 @@
  */
 package org.scenicview.view;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.function.Consumer;
-
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.control.CheckMenuItem;
-import javafx.scene.control.Label;
-import javafx.scene.control.Menu;
-import javafx.scene.control.MenuBar;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.ProgressIndicator;
-import javafx.scene.control.SeparatorMenuItem;
-import javafx.scene.control.SplitPane;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TabPane;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import javafx.util.Duration;
-
-import org.fxconnector.AppController;
-import org.fxconnector.Configuration;
-import org.fxconnector.ConnectorUtils;
-import org.fxconnector.StageController;
-import org.fxconnector.StageControllerImpl;
-import org.fxconnector.StageID;
-import org.fxconnector.event.AnimationsCountEvent;
-import org.fxconnector.event.DetailsEvent;
-import org.fxconnector.event.EvLogEvent;
-import org.fxconnector.event.FXConnectorEvent;
+import org.fxconnector.*;
+import org.fxconnector.event.*;
 import org.fxconnector.event.FXConnectorEvent.SVEventType;
-import org.fxconnector.event.FXConnectorEventDispatcher;
-import org.fxconnector.event.MousePosEvent;
-import org.fxconnector.event.NodeAddRemoveEvent;
-import org.fxconnector.event.NodeCountEvent;
-import org.fxconnector.event.NodeSelectedEvent;
-import org.fxconnector.event.SceneDetailsEvent;
-import org.fxconnector.event.ShortcutEvent;
-import org.fxconnector.event.WindowDetailsEvent;
 import org.fxconnector.node.SVNode;
 import org.scenicview.model.Persistence;
 import org.scenicview.model.update.AppsRepository;
@@ -83,380 +46,374 @@ import org.scenicview.utils.ExceptionLogger;
 import org.scenicview.utils.Logger;
 import org.scenicview.view.control.FilterTextField;
 import org.scenicview.view.dialog.AboutBox;
-import org.scenicview.view.dialog.HelpBox;
 import org.scenicview.view.tabs.AnimationsTab;
-import org.scenicview.view.tabs.CSSFXTab;
 import org.scenicview.view.tabs.DetailsTab;
 import org.scenicview.view.tabs.EventLogTab;
-import org.scenicview.view.tabs.JavaDocTab;
-import org.scenicview.view.tabs.ThreeDOMTab;
+
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * The base UI
  */
 public class ScenicViewGui {
-    
-    private static final String HELP_URL = "http://fxexperience.com/scenic-view/help";
-    public static final String STYLESHEETS = ScenicViewGui.class.getResource("scenicview.css").toExternalForm();
-    public static final Image APP_ICON = DisplayUtils.getUIImage("mglass.png");
 
-    public static final String VERSION = "11.0.2";
+	public static final String STYLESHEETS = ScenicViewGui.class.getResource("scenicview.css").toExternalForm();
+	public static final Image APP_ICON = DisplayUtils.getUIImage("mglass.png");
 
-    private final Thread shutdownHook = new Thread() {
-        @Override public void run() {
-            // We can't use close() because we are not in FXThread
-            saveProperties();
-        }
-    };
+	public static final String VERSION = "11.0.2";
 
-    // Scenic View UI
-    private final Stage scenicViewStage;
-    private BorderPane rootBorderPane;
-    private SplitPane splitPane;
-    
-    // menu bar area
-    private MenuBar menuBar;
-    private CheckMenuItem showFilteredNodesInTree;
-    private CheckMenuItem showNodesIdInTree;
-    private CheckMenuItem autoRefreshStyleSheets;
-    private CheckMenuItem componentSelectOnClick;
-    private CheckMenuItem showInvisibleNodes;
-    private CheckMenuItem showSearchBar;
-    
-    // filter area
+	private final Thread shutdownHook = new Thread(() -> {
+		// We can't use close() because we are not in FXThread
+		saveProperties();
+	});
+
+	// Scenic View UI
+	private final Stage scenicViewStage;
+	private BorderPane rootBorderPane;
+	private SplitPane splitPane;
+
+	// menu bar area
+	private MenuBar menuBar;
+	private CheckMenuItem showFilteredNodesInTree;
+	private CheckMenuItem showNodesIdInTree;
+	private CheckMenuItem autoRefreshStyleSheets;
+	private CheckMenuItem componentSelectOnClick;
+	private CheckMenuItem showInvisibleNodes;
+	private CheckMenuItem showSearchBar;
+
+	// filter area
 //    private TitledPane filtersPane;
-    private FilterTextField propertyFilterField;
-    private List<NodeFilter> activeNodeFilters;
-    
-    // tree area
-    private Node treeViewScanningPlaceholder;
-    private ScenegraphTreeView treeView;
-    
-    // search bar area
-    private GridPane searchBar;
-    
-    // status bar area
-    private StatusBar statusBar;
-    
-    private VBox bottomVBox;
+	private FilterTextField propertyFilterField;
+	private List<NodeFilter> activeNodeFilters;
 
-    
+	// tree area
+	private Node treeViewScanningPlaceholder;
+	private ScenegraphTreeView treeView;
 
-    public final Configuration configuration = new Configuration();
-    private final List<FXConnectorEvent> eventQueue = new LinkedList<>();
+	// search bar area
+	private GridPane searchBar;
 
-    private UpdateStrategy updateStrategy;
-    private long lastMousePosition;
+	// status bar area
+	private StatusBar statusBar;
 
-    private final FXConnectorEventDispatcher stageModelListener = new FXConnectorEventDispatcher() {
-        @Override public void dispatchEvent(final FXConnectorEvent appEvent) {
-            if (isValid(appEvent)) {
-                // doDispatchEvent(appEvent);
-                switch (appEvent.getType()) {
+	private VBox bottomVBox;
 
-                    case ROOT_UPDATED:
-                        doDispatchEvent(appEvent);
-                        break;
 
-                    case MOUSE_POSITION:
-                        if (System.currentTimeMillis() - lastMousePosition > 500) {
-                            lastMousePosition = System.currentTimeMillis();
-                            // No need to synchronize here
-                            eventQueue.add(appEvent);
-                        }
-                        break;
+	public final Configuration configuration = new Configuration();
+	private final List<FXConnectorEvent> eventQueue = new LinkedList<>();
 
-                    default:
-                        // No need to synchronize here
-                        eventQueue.add(appEvent);
-                        break;
-                }
+	private final UpdateStrategy updateStrategy;
+	private long lastMousePosition;
 
-            } else {
-                Logger.print("Unused event " + appEvent);
-            }
-        }
+	private final FXConnectorEventDispatcher stageModelListener = new FXConnectorEventDispatcher() {
+		@Override
+		public void dispatchEvent(final FXConnectorEvent appEvent) {
+			if (isValid(appEvent)) {
+				// doDispatchEvent(appEvent);
+				switch (appEvent.getType()) {
 
-        private boolean isValid(final FXConnectorEvent appEvent) {
-            for (int i = 0; i < appRepository.getApps().size(); i++) {
-                if (appRepository.getApps().get(i).getID() == appEvent.getStageID().getAppID()) {
-                    final List<StageController> stages = appRepository.getApps().get(i).getStages();
-                    for (int j = 0; j < stages.size(); j++) {
-                        if (stages.get(j).getID().getStageID() == appEvent.getStageID().getStageID()) {
-                            return true;
-                        }
-                    }
-                    break;
-                }
-            }
-            return false;
-        }
-    };
+					case ROOT_UPDATED:
+						doDispatchEvent(appEvent);
+						break;
 
-//    private final List<AppController> apps = new ArrayList<AppController>();
-    private final AppsRepository appRepository; 
-    
-    public StageController activeStage;
-    private SVNode selectedNode;
-    
-    private TabPane tabPane;
-    private DetailsTab detailsTab;
-    private EventLogTab eventsTab;
-    private AnimationsTab animationsTab;
-    private JavaDocTab javadocTab;
-    private ThreeDOMTab threeDOMTab;
-    private CSSFXTab cssfxTab;
+					case MOUSE_POSITION:
+						if (System.currentTimeMillis() - lastMousePosition > 500) {
+							lastMousePosition = System.currentTimeMillis();
+							// No need to synchronize here
+							eventQueue.add(appEvent);
+						}
+						break;
 
-    public ScenicViewGui(final UpdateStrategy updateStrategy, final Stage scenicViewStage) {
-        this.scenicViewStage = scenicViewStage;
-        Persistence.loadProperties();
-        Runtime.getRuntime().addShutdownHook(shutdownHook);
-        buildUI();
+					default:
+						// No need to synchronize here
+						eventQueue.add(appEvent);
+						break;
+				}
+
+			} else {
+				Logger.print("Unused event " + appEvent);
+			}
+		}
+
+		private boolean isValid(final FXConnectorEvent appEvent) {
+			for (int i = 0; i < appRepository.getApps().size(); i++) {
+				if (appRepository.getApps().get(i).getID() == appEvent.getStageID().getAppID()) {
+					final List<StageController> stages = appRepository.getApps().get(i).getStages();
+					for (StageController stage : stages) {
+						if (stage.getID().getStageID() == appEvent.getStageID().getStageID()) {
+							return true;
+						}
+					}
+					break;
+				}
+			}
+			return false;
+		}
+	};
+
+	//    private final List<AppController> apps = new ArrayList<AppController>();
+	private final AppsRepository appRepository;
+
+	public StageController activeStage;
+	private SVNode selectedNode;
+
+	private TabPane tabPane;
+	private DetailsTab detailsTab;
+	private EventLogTab eventsTab;
+	private AnimationsTab animationsTab;
+
+	public ScenicViewGui(final UpdateStrategy updateStrategy, final Stage scenicViewStage) {
+		this.scenicViewStage = scenicViewStage;
+		Persistence.loadProperties();
+		Runtime.getRuntime().addShutdownHook(shutdownHook);
+		buildUI();
 //        checkNewVersion(false);
-        
-        this.appRepository = new AppsRepository(this);
-        this.updateStrategy = updateStrategy;
-        this.updateStrategy.start(appRepository);
-        
-        // we update Scenic View on a separate thread, based on events coming
-        // in from FX Connector. The events arrive into the eventQueue, and
-        // are processed here
-        Timeline eventDispatcher = new Timeline(new KeyFrame(Duration.millis(60), event -> {
-            // No need to synchronize
-            while (!eventQueue.isEmpty()) {
-                try {
-                    doDispatchEvent(eventQueue.remove(0));
-                } catch (final Exception e) {
-                    ExceptionLogger.submitException(e);
-                }
-            }
-        }));
-        eventDispatcher.setCycleCount(Animation.INDEFINITE);
-        eventDispatcher.play();
-    }
-    
-    private void buildUI() {
-        rootBorderPane = new BorderPane();
-        rootBorderPane.setId(StageController.FX_CONNECTOR_BASE_ID + "scenic-view");
-        
-        // search bar
-        buildFiltersBox();
 
-        // menubar
-        buildMenuBar();
+		this.appRepository = new AppsRepository(this);
+		this.updateStrategy = updateStrategy;
+		this.updateStrategy.start(appRepository);
 
-        // main splitpane
-        splitPane = new SplitPane();
-        splitPane.setId("main-splitpane");
+		// we update Scenic View on a separate thread, based on events coming
+		// in from FX Connector. The events arrive into the eventQueue, and
+		// are processed here
+		Timeline eventDispatcher = new Timeline(new KeyFrame(Duration.millis(60), event -> {
+			// No need to synchronize
+			while (!eventQueue.isEmpty()) {
+				try {
+					doDispatchEvent(eventQueue.remove(0));
+				} catch (final Exception e) {
+					ExceptionLogger.submitException(e);
+				}
+			}
+		}));
+		eventDispatcher.setCycleCount(Animation.INDEFINITE);
+		eventDispatcher.play();
+	}
 
-        
-        // treeview
-        treeView = new ScenegraphTreeView(activeNodeFilters, this);
-        treeViewScanningPlaceholder = new VBox(10) {
-            {
-                ProgressIndicator progress = new ProgressIndicator();
-                Label label = new Label("Scanning for JavaFX applications");
-                label.getStyleClass().add("scanning-label");
-                getChildren().addAll(progress, label);
-                
-                setAlignment(Pos.CENTER);
-                
-                treeView.expandedItemCountProperty().addListener(o -> {
-                    setVisible(treeView.getExpandedItemCount() == 0);
-                });
-                
-            }
-        };
-        
-        StackPane treeViewStackPane = new StackPane(treeView, treeViewScanningPlaceholder);
-        treeViewStackPane.setStyle(" -fx-padding: 0");
+	private void buildUI() {
+		rootBorderPane = new BorderPane();
+		rootBorderPane.setId(StageController.FX_CONNECTOR_BASE_ID + "scenic-view");
 
-        treeView.setMaxHeight(Double.MAX_VALUE);
-        
-        // right side
-        detailsTab = new DetailsTab(this, new Consumer<String>() {
-            @Override public void accept(String property) {
-                ScenicViewGui.this.loadAPI(property);
-            }
-        });
+		// search bar
+		buildFiltersBox();
 
-        animationsTab = new AnimationsTab(this);
+		// menubar
+		buildMenuBar();
 
-        tabPane = new TabPane();
-        tabPane.getSelectionModel().selectedItemProperty().addListener((ov, oldValue, newValue) -> updateMenuBar(oldValue, newValue));
+		// main splitpane
+		splitPane = new SplitPane();
+		splitPane.setId("main-splitpane");
 
-        javadocTab = new JavaDocTab(this); 
-        
-        eventsTab = new EventLogTab(this);
-        eventsTab.activeProperty().addListener((ov, oldValue, newValue) -> {
-            configuration.setEventLogEnabled(newValue);
-            configurationUpdated();
-        });
-        
-        // 3Dom
-        threeDOMTab = new ThreeDOMTab(this); 
-        
-        // CSSFX
-        cssfxTab = new CSSFXTab(this);
-        
-        tabPane.getTabs().addAll(detailsTab, eventsTab, /*animationsTab,*/ javadocTab, threeDOMTab, cssfxTab);
-        // /3Dom
-        
-        Persistence.loadProperty("splitPaneDividerPosition", splitPane, 0.3);
 
-        // putting it all together
-        splitPane.getItems().addAll(treeViewStackPane, tabPane);
+		// treeview
+		treeView = new ScenegraphTreeView(activeNodeFilters, this);
+		treeViewScanningPlaceholder = new VBox(10) {
+			{
+				ProgressIndicator progress = new ProgressIndicator();
+				Label label = new Label("Scanning for JavaFX applications");
+				label.getStyleClass().add("scanning-label");
+				getChildren().addAll(progress, label);
 
-        rootBorderPane.setCenter(splitPane);
-        
-        // status bar
-        statusBar = new StatusBar();
-        
-        bottomVBox = new VBox(searchBar, statusBar);
+				setAlignment(Pos.CENTER);
 
-        rootBorderPane.setBottom(bottomVBox);
+				treeView.expandedItemCountProperty().addListener(o -> setVisible(treeView.getExpandedItemCount() == 0));
 
-        Persistence.loadProperty("stageWidth", scenicViewStage, 800);
-        Persistence.loadProperty("stageHeight", scenicViewStage, 800);
-    }
-    
-    private void buildFiltersBox() {
-        propertyFilterField = createFilterField("Type property names or values here", null);
-        propertyFilterField.setOnKeyReleased(new EventHandler<KeyEvent>() {
-            @Override public void handle(final KeyEvent arg0) {
-                filterProperties(propertyFilterField.getText());
-            }
-        });
-        propertyFilterField.setDisable(true);
-        
-        final FilterTextField idFilterField = createFilterField("Type Node ID's here");
-        idFilterField.setOnButtonClick(() -> {
-            idFilterField.setText("");
-            update();
-        });
-        
-        final FilterTextField classNameFilterField = createFilterField("Type class names here");
-        classNameFilterField.setOnButtonClick(() -> {
-            classNameFilterField.setText("");
-            update();
-        });
-        
-        searchBar = new GridPane();
-        searchBar.setVgap(5);
-        searchBar.setHgap(5);
-        searchBar.setSnapToPixel(true);
-        searchBar.setPadding(new Insets(0, 5, 5, 0));
-        searchBar.getStyleClass().add("search-bar");
+			}
+		};
 
-        GridPane.setHgrow(idFilterField, Priority.ALWAYS);
-        GridPane.setHgrow(classNameFilterField, Priority.ALWAYS);
-        GridPane.setHgrow(propertyFilterField, Priority.ALWAYS);
+		StackPane treeViewStackPane = new StackPane(treeView, treeViewScanningPlaceholder);
+		treeViewStackPane.setStyle(" -fx-padding: 0");
 
-        int column = 1;
-        
-        Label nodeIdFilterLabel = new Label("Node ID Filter:");
-        Label classNameFilterLabel = new Label("Class Name Filter:");
-        Label propertyFilterLabel = new Label("Property Filter:");
-        
-        searchBar.add(nodeIdFilterLabel, column++, 1);
-        searchBar.add(idFilterField, column++, 1);
-        searchBar.add(classNameFilterLabel, column++, 1);
-        searchBar.add(classNameFilterField, column++, 1);
-        searchBar.add(propertyFilterLabel, column++, 1);
-        searchBar.add(propertyFilterField, column++, 1);
+		treeView.setMaxHeight(Double.MAX_VALUE);
 
-        // create filters for nodes
-        activeNodeFilters = new ArrayList<>();
+		// right side
+		detailsTab = new DetailsTab(this, property -> ScenicViewGui.this.loadAPI(property));
 
-        /**
-         * Create a filter for our own nodes
-         */
-        activeNodeFilters.add(new NodeFilter() {
-            @Override public boolean allowChildrenOnRejection() {
-                return false;
-            }
+		animationsTab = new AnimationsTab(this);
 
-            @Override public boolean accept(final SVNode node) {
-                // do not create tree nodes for our bounds rectangles
-                return ConnectorUtils.isNormalNode(node);
-            }
+		tabPane = new TabPane();
+		tabPane.getSelectionModel().selectedItemProperty().addListener((ov, oldValue, newValue) -> updateMenuBar(oldValue, newValue));
 
-            @Override public boolean ignoreShowFilteredNodesInTree() {
-                return true;
-            }
+		eventsTab = new EventLogTab(this);
+		eventsTab.activeProperty().addListener((ov, oldValue, newValue) -> {
+			configuration.setEventLogEnabled(newValue);
+			configurationUpdated();
+		});
 
-            @Override public boolean expandAllNodes() {
-                return false;
-            }
-        });
-        
-        activeNodeFilters.add(new NodeFilter() {
-            @Override public boolean allowChildrenOnRejection() {
-                return false;
-            }
+		// 3Dom
 
-            @Override public boolean accept(final SVNode node) {
-                return showInvisibleNodes.isSelected() || node.isVisible();
-            }
+		tabPane.getTabs().addAll(detailsTab, eventsTab);
+		// /3Dom
 
-            @Override public boolean ignoreShowFilteredNodesInTree() {
-                return false;
-            }
+		Persistence.loadProperty("splitPaneDividerPosition", splitPane, 0.3);
 
-            @Override public boolean expandAllNodes() {
-                return false;
-            }
-        });
-        
-        activeNodeFilters.add(new NodeFilter() {
-            @Override public boolean allowChildrenOnRejection() {
-                return true;
-            }
+		// putting it all together
+		splitPane.getItems().addAll(treeViewStackPane, tabPane);
 
-            @Override public boolean accept(final SVNode node) {
-                if (idFilterField.getText().equals(""))
-                    return true;
-                return node.getId() != null && node.getId().toLowerCase().indexOf(idFilterField.getText().toLowerCase()) != -1;
-            }
+		rootBorderPane.setCenter(splitPane);
 
-            @Override public boolean ignoreShowFilteredNodesInTree() {
-                return false;
-            }
+		// status bar
+		statusBar = new StatusBar();
 
-            @Override public boolean expandAllNodes() {
-                return !idFilterField.getText().equals("");
-            }
-        });
-        
-        activeNodeFilters.add(new NodeFilter() {
-            @Override public boolean allowChildrenOnRejection() {
-                return true;
-            }
+		bottomVBox = new VBox(searchBar, statusBar);
 
-            @Override public boolean accept(final SVNode node) {
-                if (classNameFilterField.getText().equals(""))
-                    return true;
+		rootBorderPane.setBottom(bottomVBox);
 
-                // Allow reduces or complete className
-                return node.getNodeClass().toLowerCase().indexOf(classNameFilterField.getText().toLowerCase()) != -1;
-            }
+		Persistence.loadProperty("stageWidth", scenicViewStage, 800);
+		Persistence.loadProperty("stageHeight", scenicViewStage, 800);
+	}
 
-            @Override public boolean ignoreShowFilteredNodesInTree() {
-                return false;
-            }
+	private void buildFiltersBox() {
+		propertyFilterField = createFilterField("Type property names or values here", null);
+		propertyFilterField.setOnKeyReleased(arg0 -> filterProperties(propertyFilterField.getText()));
+		propertyFilterField.setDisable(true);
 
-            @Override public boolean expandAllNodes() {
-                return !classNameFilterField.getText().equals("");
-            }
-        });
-    }
-    
-    private void buildMenuBar() {
-        menuBar = new MenuBar();
-        menuBar.setUseSystemMenuBar(true);
-        // menuBar.setId("main-menubar");
+		final FilterTextField idFilterField = createFilterField("Type Node ID's here");
+		idFilterField.setOnButtonClick(() -> {
+			idFilterField.setText("");
+			update();
+		});
 
-        // ---- File Menu
+		final FilterTextField classNameFilterField = createFilterField("Type class names here");
+		classNameFilterField.setOnButtonClick(() -> {
+			classNameFilterField.setText("");
+			update();
+		});
+
+		searchBar = new GridPane();
+		searchBar.setVgap(5);
+		searchBar.setHgap(5);
+		searchBar.setSnapToPixel(true);
+		searchBar.setPadding(new Insets(0, 5, 5, 0));
+		searchBar.getStyleClass().add("search-bar");
+
+		GridPane.setHgrow(idFilterField, Priority.ALWAYS);
+		GridPane.setHgrow(classNameFilterField, Priority.ALWAYS);
+		GridPane.setHgrow(propertyFilterField, Priority.ALWAYS);
+
+		int column = 1;
+
+		Label nodeIdFilterLabel = new Label("Node ID Filter:");
+		Label classNameFilterLabel = new Label("Class Name Filter:");
+		Label propertyFilterLabel = new Label("Property Filter:");
+
+		searchBar.add(nodeIdFilterLabel, column++, 1);
+		searchBar.add(idFilterField, column++, 1);
+		searchBar.add(classNameFilterLabel, column++, 1);
+		searchBar.add(classNameFilterField, column++, 1);
+		searchBar.add(propertyFilterLabel, column++, 1);
+		searchBar.add(propertyFilterField, column++, 1);
+
+		// create filters for nodes
+		activeNodeFilters = new ArrayList<>();
+
+		/**
+		 * Create a filter for our own nodes
+		 */
+		activeNodeFilters.add(new NodeFilter() {
+			@Override
+			public boolean allowChildrenOnRejection() {
+				return false;
+			}
+
+			@Override
+			public boolean accept(final SVNode node) {
+				// do not create tree nodes for our bounds rectangles
+				return ConnectorUtils.isNormalNode(node);
+			}
+
+			@Override
+			public boolean ignoreShowFilteredNodesInTree() {
+				return true;
+			}
+
+			@Override
+			public boolean expandAllNodes() {
+				return false;
+			}
+		});
+
+		activeNodeFilters.add(new NodeFilter() {
+			@Override
+			public boolean allowChildrenOnRejection() {
+				return false;
+			}
+
+			@Override
+			public boolean accept(final SVNode node) {
+				return showInvisibleNodes.isSelected() || node.isVisible();
+			}
+
+			@Override
+			public boolean ignoreShowFilteredNodesInTree() {
+				return false;
+			}
+
+			@Override
+			public boolean expandAllNodes() {
+				return false;
+			}
+		});
+
+		activeNodeFilters.add(new NodeFilter() {
+			@Override
+			public boolean allowChildrenOnRejection() {
+				return true;
+			}
+
+			@Override
+			public boolean accept(final SVNode node) {
+				if (idFilterField.getText().equals(""))
+					return true;
+				return node.getId() != null && node.getId().toLowerCase().indexOf(idFilterField.getText().toLowerCase()) != -1;
+			}
+
+			@Override
+			public boolean ignoreShowFilteredNodesInTree() {
+				return false;
+			}
+
+			@Override
+			public boolean expandAllNodes() {
+				return !idFilterField.getText().equals("");
+			}
+		});
+
+		activeNodeFilters.add(new NodeFilter() {
+			@Override
+			public boolean allowChildrenOnRejection() {
+				return true;
+			}
+
+			@Override
+			public boolean accept(final SVNode node) {
+				if (classNameFilterField.getText().equals(""))
+					return true;
+
+				// Allow reduces or complete className
+				return node.getNodeClass().toLowerCase().indexOf(classNameFilterField.getText().toLowerCase()) != -1;
+			}
+
+			@Override
+			public boolean ignoreShowFilteredNodesInTree() {
+				return false;
+			}
+
+			@Override
+			public boolean expandAllNodes() {
+				return !classNameFilterField.getText().equals("");
+			}
+		});
+	}
+
+	private void buildMenuBar() {
+		menuBar = new MenuBar();
+		menuBar.setUseSystemMenuBar(true);
+		// menuBar.setId("main-menubar");
+
+		// ---- File Menu
 //        final MenuItem classpathItem = new MenuItem("Configure Classpath");
 //        classpathItem.setOnAction(new EventHandler<ActionEvent>() {
 //            @Override public void handle(final ActionEvent arg0) {
@@ -472,138 +429,138 @@ public class ScenicViewGui {
 //            }
 //        });
 
-        final MenuItem exitItem = new MenuItem("E_xit Scenic View");
-        exitItem.setAccelerator(KeyCombination.keyCombination("CTRL+Q"));
-        exitItem.setOnAction(event -> {
-            Runtime.getRuntime().removeShutdownHook(shutdownHook);
-            close();
-            // TODO Why closing the Stage does not dispatch
-            // WINDOW_CLOSE_REQUEST??
-            scenicViewStage.close();
-        });
+		final MenuItem exitItem = new MenuItem("E_xit Scenic View");
+		exitItem.setAccelerator(KeyCombination.keyCombination("CTRL+Q"));
+		exitItem.setOnAction(event -> {
+			Runtime.getRuntime().removeShutdownHook(shutdownHook);
+			close();
+			// TODO Why closing the Stage does not dispatch
+			// WINDOW_CLOSE_REQUEST??
+			scenicViewStage.close();
+		});
 
-        final Menu fileMenu = new Menu("File");
+		final Menu fileMenu = new Menu("File");
 //        if (updateStrategy.needsClassPathConfiguration()) {
 //            fileMenu.getItems().addAll(classpathItem, new SeparatorMenuItem());
 //        }
-        fileMenu.getItems().add(exitItem);
+		fileMenu.getItems().add(exitItem);
 
-        // ---- Options Menu
-        final CheckMenuItem showBoundsCheckbox = buildCheckMenuItem("Show Bounds Overlays", "Show the bound overlays on selected",
-                "Do not show bound overlays on selected", "showBounds", Boolean.TRUE);
-        showBoundsCheckbox.setId("show-bounds-checkbox");
-        // showBoundsCheckbox.setTooltip(new
-        // Tooltip("Display a yellow highlight for boundsInParent and green outline for layoutBounds."));
-        configuration.setShowBounds(showBoundsCheckbox.isSelected());
-        showBoundsCheckbox.selectedProperty().addListener((ChangeListener<Boolean>) (o, oldValue, newValue) -> {
-            configuration.setShowBounds(newValue);
-            configurationUpdated();
-        });
+		// ---- Options Menu
+		final CheckMenuItem showBoundsCheckbox = buildCheckMenuItem("Show Bounds Overlays", "Show the bound overlays on selected",
+				"Do not show bound overlays on selected", "showBounds", Boolean.TRUE);
+		showBoundsCheckbox.setId("show-bounds-checkbox");
+		// showBoundsCheckbox.setTooltip(new
+		// Tooltip("Display a yellow highlight for boundsInParent and green outline for layoutBounds."));
+		configuration.setShowBounds(showBoundsCheckbox.isSelected());
+		showBoundsCheckbox.selectedProperty().addListener((ChangeListener<Boolean>) (o, oldValue, newValue) -> {
+			configuration.setShowBounds(newValue);
+			configurationUpdated();
+		});
 
-        final CheckMenuItem collapseControls = buildCheckMenuItem("Collapse controls In Tree", "Controls will be collapsed", "Controls will be expanded",
-                "collapseControls", Boolean.TRUE);
-        collapseControls.selectedProperty().addListener((ChangeListener<Boolean>) (o, oldValue, newValue) -> {
-            configuration.setCollapseControls(newValue);
-            configurationUpdated();
-        });
-        configuration.setCollapseControls(collapseControls.isSelected());
+		final CheckMenuItem collapseControls = buildCheckMenuItem("Collapse controls In Tree", "Controls will be collapsed", "Controls will be expanded",
+				"collapseControls", Boolean.TRUE);
+		collapseControls.selectedProperty().addListener((ChangeListener<Boolean>) (o, oldValue, newValue) -> {
+			configuration.setCollapseControls(newValue);
+			configurationUpdated();
+		});
+		configuration.setCollapseControls(collapseControls.isSelected());
 
-        final CheckMenuItem collapseContentControls = buildCheckMenuItem("Collapse container controls In Tree", "Container controls will be collapsed",
-                "Container controls will be expanded", "collapseContainerControls", Boolean.FALSE);
-        collapseContentControls.selectedProperty().addListener((ChangeListener<Boolean>) (o, oldValue, newValue) -> {
-            configuration.setCollapseContentControls(newValue);
-            configurationUpdated();
-        });
-        collapseContentControls.disableProperty().bind(collapseControls.selectedProperty().not());
-        configuration.setCollapseContentControls(collapseContentControls.isSelected());
+		final CheckMenuItem collapseContentControls = buildCheckMenuItem("Collapse container controls In Tree", "Container controls will be collapsed",
+				"Container controls will be expanded", "collapseContainerControls", Boolean.FALSE);
+		collapseContentControls.selectedProperty().addListener((ChangeListener<Boolean>) (o, oldValue, newValue) -> {
+			configuration.setCollapseContentControls(newValue);
+			configurationUpdated();
+		});
+		collapseContentControls.disableProperty().bind(collapseControls.selectedProperty().not());
+		configuration.setCollapseContentControls(collapseContentControls.isSelected());
 
-        final CheckMenuItem showBaselineCheckbox = buildCheckMenuItem("Show Baseline Overlay", "Display a red line at the current node's baseline offset",
-                "Do not show baseline overlay", "showBaseline", Boolean.FALSE);
-        showBaselineCheckbox.setId("show-baseline-overlay");
-        configuration.setShowBaseline(showBaselineCheckbox.isSelected());
-        showBaselineCheckbox.selectedProperty().addListener((ChangeListener<Boolean>) (o, oldValue, newValue) -> {
-            configuration.setShowBaseline(newValue);
-            configurationUpdated();
-        });
+		final CheckMenuItem showBaselineCheckbox = buildCheckMenuItem("Show Baseline Overlay", "Display a red line at the current node's baseline offset",
+				"Do not show baseline overlay", "showBaseline", Boolean.FALSE);
+		showBaselineCheckbox.setId("show-baseline-overlay");
+		configuration.setShowBaseline(showBaselineCheckbox.isSelected());
+		showBaselineCheckbox.selectedProperty().addListener((ChangeListener<Boolean>) (o, oldValue, newValue) -> {
+			configuration.setShowBaseline(newValue);
+			configurationUpdated();
+		});
 
-        final CheckMenuItem automaticScenegraphStructureRefreshing = buildCheckMenuItem("Auto-Refresh Scenegraph",
-                "Scenegraph structure will be automatically updated on change", "Scenegraph structure will NOT be automatically updated on change",
-                "automaticScenegraphStructureRefreshing", Boolean.TRUE);
-        automaticScenegraphStructureRefreshing.selectedProperty().addListener((ChangeListener<Boolean>) (o, oldValue, newValue) -> {
-            configuration.setAutoRefreshSceneGraph(automaticScenegraphStructureRefreshing.isSelected());
-            configurationUpdated();
-        });
-        configuration.setAutoRefreshSceneGraph(automaticScenegraphStructureRefreshing.isSelected());
-        
-        
-        // --- show search bar
-        showSearchBar = buildCheckMenuItem("Show Search Bar", "Shows a search bar to allow you to filter the displayed information",
-                "Shows a search bar to allow you to filter the displayed information", "showSearchBar", Boolean.TRUE);
-        searchBar.visibleProperty().bind(showSearchBar.selectedProperty());
-        searchBar.managedProperty().bind(showSearchBar.selectedProperty());
+		final CheckMenuItem automaticScenegraphStructureRefreshing = buildCheckMenuItem("Auto-Refresh Scenegraph",
+				"Scenegraph structure will be automatically updated on change", "Scenegraph structure will NOT be automatically updated on change",
+				"automaticScenegraphStructureRefreshing", Boolean.TRUE);
+		automaticScenegraphStructureRefreshing.selectedProperty().addListener((ChangeListener<Boolean>) (o, oldValue, newValue) -> {
+			configuration.setAutoRefreshSceneGraph(automaticScenegraphStructureRefreshing.isSelected());
+			configurationUpdated();
+		});
+		configuration.setAutoRefreshSceneGraph(automaticScenegraphStructureRefreshing.isSelected());
 
-        
-        // --- show invisible nodes
-        showInvisibleNodes = buildCheckMenuItem("Show Invisible Nodes In Tree", "Invisible nodes will be faded in the scenegraph tree",
-                "Invisible nodes will not be shown in the scenegraph tree", "showInvisibleNodes", Boolean.FALSE);
-        final ChangeListener<Boolean> visilityListener = (o, oldValue, newValue) -> {
-            configuration.setVisibilityFilteringActive(!showInvisibleNodes.isSelected() && !showFilteredNodesInTree.isSelected());
-            configurationUpdated();
-        };
-        showInvisibleNodes.selectedProperty().addListener(visilityListener);
 
-        
-        // --- show node IDs in tree
-        showNodesIdInTree = buildCheckMenuItem("Show Node IDs", "Node IDs will be shown on the scenegraph tree",
-                "Node IDs will not be shown the Scenegraph tree", "showNodesIdInTree", Boolean.FALSE);
-        showNodesIdInTree.selectedProperty().addListener(o -> update());
+		// --- show search bar
+		showSearchBar = buildCheckMenuItem("Show Search Bar", "Shows a search bar to allow you to filter the displayed information",
+				"Shows a search bar to allow you to filter the displayed information", "showSearchBar", Boolean.TRUE);
+		searchBar.visibleProperty().bind(showSearchBar.selectedProperty());
+		searchBar.managedProperty().bind(showSearchBar.selectedProperty());
 
-        
-        // --- show filtered nodes in tree
-        showFilteredNodesInTree = buildCheckMenuItem("Show Filtered Nodes In Tree", "Filtered nodes will be faded in the tree",
-                "Filtered nodes will not be shown in tree (unless they are parents of non-filtered nodes)", "showFilteredNodesInTree", Boolean.TRUE);
 
-        showFilteredNodesInTree.selectedProperty().addListener(visilityListener);
-        configuration.setVisibilityFilteringActive(!showInvisibleNodes.isSelected() && !showFilteredNodesInTree.isSelected());
+		// --- show invisible nodes
+		showInvisibleNodes = buildCheckMenuItem("Show Invisible Nodes In Tree", "Invisible nodes will be faded in the scenegraph tree",
+				"Invisible nodes will not be shown in the scenegraph tree", "showInvisibleNodes", Boolean.FALSE);
+		final ChangeListener<Boolean> visilityListener = (o, oldValue, newValue) -> {
+			configuration.setVisibilityFilteringActive(!showInvisibleNodes.isSelected() && !showFilteredNodesInTree.isSelected());
+			configurationUpdated();
+		};
+		showInvisibleNodes.selectedProperty().addListener(visilityListener);
 
-        /**
-         * Filter invisible nodes only makes sense if showFilteredNodesInTree is not selected
-         */
-        showInvisibleNodes.disableProperty().bind(showFilteredNodesInTree.selectedProperty());
 
-        componentSelectOnClick = buildCheckMenuItem("Component highlight/select on click", "Click on the scene to select a component", "", null, null);
-        componentSelectOnClick.selectedProperty().addListener((ChangeListener<Boolean>) (o, oldValue, newValue) -> selectOnClick(newValue));
+		// --- show node IDs in tree
+		showNodesIdInTree = buildCheckMenuItem("Show Node IDs", "Node IDs will be shown on the scenegraph tree",
+				"Node IDs will not be shown the Scenegraph tree", "showNodesIdInTree", Boolean.FALSE);
+		showNodesIdInTree.selectedProperty().addListener(o -> update());
 
-        final CheckMenuItem ignoreMouseTransparentNodes = buildCheckMenuItem("Ignore MouseTransparent Nodes", "Transparent nodes will not be selectable",
-                "Transparent nodes can be selected", "ignoreMouseTransparentNodes", Boolean.TRUE);
-        ignoreMouseTransparentNodes.selectedProperty().addListener((ChangeListener<Boolean>) (o, oldValue, newValue) -> {
-            configuration.setIgnoreMouseTransparent(newValue);
-            configurationUpdated();
-        });
-        configuration.setIgnoreMouseTransparent(ignoreMouseTransparentNodes.isSelected());
 
-        final CheckMenuItem registerShortcuts = buildCheckMenuItem("Register shortcuts", "SV Keyboard shortcuts will be registered on your app",
-                "SV Keyboard shortcuts will be removed on your app", "registerShortcuts", Boolean.TRUE);
-        registerShortcuts.selectedProperty().addListener((ChangeListener<Boolean>) (o, oldValue, newValue) -> {
-            configuration.setRegisterShortcuts(newValue);
-            configurationUpdated();
-        });
-        configuration.setRegisterShortcuts(registerShortcuts.isSelected());
+		// --- show filtered nodes in tree
+		showFilteredNodesInTree = buildCheckMenuItem("Show Filtered Nodes In Tree", "Filtered nodes will be faded in the tree",
+				"Filtered nodes will not be shown in tree (unless they are parents of non-filtered nodes)", "showFilteredNodesInTree", Boolean.TRUE);
 
-        autoRefreshStyleSheets = buildCheckMenuItem("Auto-Refresh StyleSheets",
-                "A background thread will check modifications on the css files to reload them if needed", "StyleSheets autorefreshing disabled",
-                "autoRefreshStyleSheets", Boolean.FALSE);
-        autoRefreshStyleSheets.selectedProperty().addListener((ChangeListener<Boolean>) (o, oldValue, newValue) -> {
-            configuration.setAutoRefreshStyles(newValue);
-            configurationUpdated();
-        });
-        configuration.setAutoRefreshStyles(autoRefreshStyleSheets.isSelected());
+		showFilteredNodesInTree.selectedProperty().addListener(visilityListener);
+		configuration.setVisibilityFilteringActive(!showInvisibleNodes.isSelected() && !showFilteredNodesInTree.isSelected());
 
-        final Menu scenegraphMenu = new Menu("Scenegraph");
-        scenegraphMenu.getItems().addAll(automaticScenegraphStructureRefreshing, autoRefreshStyleSheets, registerShortcuts, new SeparatorMenuItem(),
-                componentSelectOnClick, ignoreMouseTransparentNodes);
+		/**
+		 * Filter invisible nodes only makes sense if showFilteredNodesInTree is not selected
+		 */
+		showInvisibleNodes.disableProperty().bind(showFilteredNodesInTree.selectedProperty());
 
-        final Menu displayOptionsMenu = new Menu("Display Options");
+		componentSelectOnClick = buildCheckMenuItem("Component highlight/select on click", "Click on the scene to select a component", "", null, null);
+		componentSelectOnClick.selectedProperty().addListener((ChangeListener<Boolean>) (o, oldValue, newValue) -> selectOnClick(newValue));
+
+		final CheckMenuItem ignoreMouseTransparentNodes = buildCheckMenuItem("Ignore MouseTransparent Nodes", "Transparent nodes will not be selectable",
+				"Transparent nodes can be selected", "ignoreMouseTransparentNodes", Boolean.TRUE);
+		ignoreMouseTransparentNodes.selectedProperty().addListener((ChangeListener<Boolean>) (o, oldValue, newValue) -> {
+			configuration.setIgnoreMouseTransparent(newValue);
+			configurationUpdated();
+		});
+		configuration.setIgnoreMouseTransparent(ignoreMouseTransparentNodes.isSelected());
+
+		final CheckMenuItem registerShortcuts = buildCheckMenuItem("Register shortcuts", "SV Keyboard shortcuts will be registered on your app",
+				"SV Keyboard shortcuts will be removed on your app", "registerShortcuts", Boolean.TRUE);
+		registerShortcuts.selectedProperty().addListener((ChangeListener<Boolean>) (o, oldValue, newValue) -> {
+			configuration.setRegisterShortcuts(newValue);
+			configurationUpdated();
+		});
+		configuration.setRegisterShortcuts(registerShortcuts.isSelected());
+
+		autoRefreshStyleSheets = buildCheckMenuItem("Auto-Refresh StyleSheets",
+				"A background thread will check modifications on the css files to reload them if needed", "StyleSheets autorefreshing disabled",
+				"autoRefreshStyleSheets", Boolean.FALSE);
+		autoRefreshStyleSheets.selectedProperty().addListener((ChangeListener<Boolean>) (o, oldValue, newValue) -> {
+			configuration.setAutoRefreshStyles(newValue);
+			configurationUpdated();
+		});
+		configuration.setAutoRefreshStyles(autoRefreshStyleSheets.isSelected());
+
+		final Menu scenegraphMenu = new Menu("Scenegraph");
+		scenegraphMenu.getItems().addAll(automaticScenegraphStructureRefreshing, autoRefreshStyleSheets, registerShortcuts, new SeparatorMenuItem(),
+				componentSelectOnClick, ignoreMouseTransparentNodes);
+
+		final Menu displayOptionsMenu = new Menu("Display Options");
 
 //        final Menu ruler = new Menu("Ruler");
 //        final CheckMenuItem showRuler = buildCheckMenuItem("Show Ruler", "Show ruler in the scene for alignment purposes", "", null, null);
@@ -634,20 +591,17 @@ public class ScenicViewGui {
 //        configuration.setRulerSeparation(rulerConfig.rulerSeparationProperty().get());
 //        ruler.getItems().addAll(showRuler, rulerConfig);
 
-        displayOptionsMenu.getItems().addAll(showBoundsCheckbox, 
-                                             showBaselineCheckbox, 
+		displayOptionsMenu.getItems().addAll(showBoundsCheckbox,
+				showBaselineCheckbox,
 //                                             showRuler,
-                                             showSearchBar, 
-                                             showFilteredNodesInTree, 
-                                             showInvisibleNodes, 
-                                             showNodesIdInTree, 
-                                             collapseControls, 
-                                             collapseContentControls);
+				showSearchBar,
+				showFilteredNodesInTree,
+				showInvisibleNodes,
+				showNodesIdInTree,
+				collapseControls,
+				collapseContentControls);
 
-        final Menu aboutMenu = new Menu("Help");
-
-        final MenuItem help = new MenuItem("Help Contents");
-        help.setOnAction(event -> HelpBox.make("Help Contents", HELP_URL, scenicViewStage));
+		final Menu aboutMenu = new Menu("Help");
 
 //        final MenuItem newVersion = new MenuItem("Check For New Version");
 //        newVersion.setOnAction(new EventHandler<ActionEvent>() {
@@ -656,35 +610,33 @@ public class ScenicViewGui {
 //            }
 //        });
 
-        final MenuItem about = new MenuItem("About");
-        about.setOnAction(event -> AboutBox.make("About", scenicViewStage));
+		final MenuItem about = new MenuItem("About");
+		about.setOnAction(event -> AboutBox.make("About", scenicViewStage));
 
-        aboutMenu.getItems().addAll(help/*, newVersion*/, about);
+		menuBar.getMenus().addAll(fileMenu, displayOptionsMenu, scenegraphMenu, aboutMenu);
 
-        menuBar.getMenus().addAll(fileMenu, displayOptionsMenu, scenegraphMenu, aboutMenu);
+		rootBorderPane.setTop(menuBar);
+	}
 
-        rootBorderPane.setTop(menuBar);
-    }
-    
-    private void updateMenuBar(final Tab oldValue, final Tab newValue) {
-        if (oldValue != null && oldValue instanceof ContextMenuContainer) {
-            Menu menu = ((ContextMenuContainer) oldValue).getMenu();
-            menuBar.getMenus().remove(menu);
-        }
-        if (newValue != null && newValue instanceof ContextMenuContainer) {
-            Menu newMenu = ((ContextMenuContainer) newValue).getMenu();
-            if (newMenu != null) {
-                menuBar.getMenus().add(menuBar.getMenus().size() - 1, newMenu);
-            }
-        }
-    }
+	private void updateMenuBar(final Tab oldValue, final Tab newValue) {
+		if (oldValue != null && oldValue instanceof ContextMenuContainer) {
+			Menu menu = ((ContextMenuContainer) oldValue).getMenu();
+			menuBar.getMenus().remove(menu);
+		}
+		if (newValue != null && newValue instanceof ContextMenuContainer) {
+			Menu newMenu = ((ContextMenuContainer) newValue).getMenu();
+			if (newMenu != null) {
+				menuBar.getMenus().add(menuBar.getMenus().size() - 1, newMenu);
+			}
+		}
+	}
 
-    protected void selectOnClick(final boolean newValue) {
-        if (configuration.isComponentSelectOnClick() != newValue) {
-            configuration.setComponentSelectOnClick(newValue);
-            configurationUpdated();
-        }
-    }
+	protected void selectOnClick(final boolean newValue) {
+		if (configuration.isComponentSelectOnClick() != newValue) {
+			configuration.setComponentSelectOnClick(newValue);
+			configurationUpdated();
+		}
+	}
 
 //    private void checkNewVersion(final boolean forced) {
 //        final SimpleDateFormat format = new SimpleDateFormat("ddMMyyyy");
@@ -722,231 +674,216 @@ public class ScenicViewGui {
 //            ExceptionLogger.submitException(e);
 //        }
 //    }
-    
-    public void removeApp(final AppController appController) {
-        treeView.removeApp(appController);
-    }
-    
-    public void removeStage(final StageController stageController) {
-        treeView.removeStage(stageController);
-    }
-    
-    public void setActiveStage(final StageController activeStage) {
-        this.activeStage = activeStage;
-        cssfxTab.setActiveStage(activeStage.getID());
-    }
-    
-    public FXConnectorEventDispatcher getStageModelListener() {
-        return stageModelListener;
-    }
 
-    public void configurationUpdated() {
-        for (int i = 0; i < appRepository.getApps().size(); i++) {
-            final List<StageController> stages = appRepository.getApps().get(i).getStages();
-            for (int j = 0; j < stages.size(); j++) {
-                if (stages.get(j).isOpened()) {
-                    stages.get(j).configurationUpdated(configuration);
-                }
-            }
-        }
-    }
+	public void removeApp(final AppController appController) {
+		treeView.removeApp(appController);
+	}
 
-    public void animationsEnabled(final boolean enabled) {
-        for (int i = 0; i < appRepository.getApps().size(); i++) {
-            final List<StageController> stages = appRepository.getApps().get(i).getStages();
-            for (int j = 0; j < stages.size(); j++) {
-                if (stages.get(j).isOpened()) {
-                    stages.get(j).animationsEnabled(enabled);
-                }
-            }
-        }
-    }
+	public void removeStage(final StageController stageController) {
+		treeView.removeStage(stageController);
+	}
 
-    public void updateAnimations() {
-        animationsTab.clear();
-        for (int i = 0; i < appRepository.getApps().size(); i++) {
-            /**
-             * Only first stage
-             */
-            final List<StageController> stages = appRepository.getApps().get(i).getStages();
-            for (int j = 0; j < stages.size(); j++) {
-                if (stages.get(j).isOpened()) {
-                    stages.get(j).updateAnimations();
-                    break;
-                }
-            }
-        }
-    }
+	public void setActiveStage(final StageController activeStage) {
+		this.activeStage = activeStage;
+	}
 
-    public void pauseAnimation(final StageID id, final int animationID) {
-        for (int i = 0; i < appRepository.getApps().size(); i++) {
-            final List<StageController> stages = appRepository.getApps().get(i).getStages();
-            for (int j = 0; j < stages.size(); j++) {
-                if (stages.get(j).getID().equals(id)) {
-                    stages.get(j).pauseAnimation(animationID);
-                }
-            }
-        }
-        updateAnimations();
-    }
+	public FXConnectorEventDispatcher getStageModelListener() {
+		return stageModelListener;
+	}
 
-    private void loadAPI(final String property) {
-        if (tabPane.getTabs().contains(javadocTab)) {
-            if (property != null) {
-                goToTab(JavaDocTab.TAB_NAME);
-            }
-            if (javadocTab.isSelected()) {
-                javadocTab.loadAPI(property);
-            }
-        }
-    }
+	public void configurationUpdated() {
+		for (int i = 0; i < appRepository.getApps().size(); i++) {
+			final List<StageController> stages = appRepository.getApps().get(i).getStages();
+			for (StageController stage : stages) {
+				if (stage.isOpened()) {
+					stage.configurationUpdated(configuration);
+				}
+			}
+		}
+	}
 
-    @SuppressWarnings({ "unchecked", "rawtypes" }) 
-    public String findProperty(final String className, final String property) {
-        Class node = null;
-        try {
-            node = Class.forName(className);
-            node.getDeclaredMethod(property + "Property");
+	public void animationsEnabled(final boolean enabled) {
+		for (int i = 0; i < appRepository.getApps().size(); i++) {
+			final List<StageController> stages = appRepository.getApps().get(i).getStages();
+			for (StageController stage : stages) {
+				if (stage.isOpened()) {
+					stage.animationsEnabled(enabled);
+				}
+			}
+		}
+	}
 
-            return className;
-        } catch (final Exception e) {
-            return findProperty(node.getSuperclass().getName(), property);
-        }
-    }
+	public void updateAnimations() {
+		animationsTab.clear();
+		for (int i = 0; i < appRepository.getApps().size(); i++) {
+			/**
+			 * Only first stage
+			 */
+			final List<StageController> stages = appRepository.getApps().get(i).getStages();
+			for (StageController stage : stages) {
+				if (stage.isOpened()) {
+					stage.updateAnimations();
+					break;
+				}
+			}
+		}
+	}
 
-    public void update() {
-        for (int i = 0; i < appRepository.getApps().size(); i++) {
-            final List<StageController> stages = appRepository.getApps().get(i).getStages();
-            for (int j = 0; j < stages.size(); j++) {
-                if (stages.get(j).isOpened()) {
-                    stages.get(j).update();
-                }
-            }
-        }
-    }
+	public void pauseAnimation(final StageID id, final int animationID) {
+		for (int i = 0; i < appRepository.getApps().size(); i++) {
+			final List<StageController> stages = appRepository.getApps().get(i).getStages();
+			for (StageController stage : stages) {
+				if (stage.getID().equals(id)) {
+					stage.pauseAnimation(animationID);
+				}
+			}
+		}
+		updateAnimations();
+	}
 
-    StageController getStageController(final StageID id) {
-        for (int i = 0; i < appRepository.getApps().size(); i++) {
-            final List<StageController> stages = appRepository.getApps().get(i).getStages();
-            for (int j = 0; j < stages.size(); j++) {
-                if (stages.get(j).getID().equals(id)) {
-                    return stages.get(j);
-                }
-            }
-        }
-        return appRepository.getApps().get(0).getStages().get(0);
-        // return null;
-    }
+	private void loadAPI(final String property) {
+		// TODO remove
+	}
 
-    protected void filterProperties(final String text) {
-        detailsTab.filterProperties(text);
-    }
+	@SuppressWarnings({"unchecked", "rawtypes"})
+	public String findProperty(final String className, final String property) {
+		Class node = null;
+		try {
+			node = Class.forName(className);
+			node.getDeclaredMethod(property + "Property");
 
-    public void setSelectedNode(final StageController controller, final SVNode value) {
-        if (value != selectedNode) {
-            if (controller != null && activeStage != controller) {
-                /**
-                 * Remove selected from previous active
-                 */
-                activeStage.setSelectedNode(null);
-                activeStage = controller;
-            }
-            storeSelectedNode(value);
-            eventsTab.setSelectedNode(value);
-            loadAPI(null);
-            propertyFilterField.setText("");
-            propertyFilterField.setDisable(value == null);
-            filterProperties(propertyFilterField.getText());
-            threeDOMTab.setSelectedNode(value); // 3D addition
-            cssfxTab.setActiveStage((controller==null)?null:controller.getID());
-        }
-    }
+			return className;
+		} catch (final Exception e) {
+			return findProperty(node.getSuperclass().getName(), property);
+		}
+	}
 
-    public SVNode getSelectedNode() {
-        return selectedNode;
-    }
-    
-    public void removeNode() {
-        activeStage.removeSelectedNode();
-    }
+	public void update() {
+		for (int i = 0; i < appRepository.getApps().size(); i++) {
+			final List<StageController> stages = appRepository.getApps().get(i).getStages();
+			for (StageController stage : stages) {
+				if (stage.isOpened()) {
+					stage.update();
+				}
+			}
+		}
+	}
 
-    private void storeSelectedNode(final SVNode value) {
-        selectedNode = value;
-        if (selectedNode != null && detailsTab.isSelected())
-            setStatusText("Click on the labels to modify its values. The panel could have different capabilities. When changed the values will be highlighted",
-                    8000);
-        activeStage.setSelectedNode(value);
-    }
+	StageController getStageController(final StageID id) {
+		for (int i = 0; i < appRepository.getApps().size(); i++) {
+			final List<StageController> stages = appRepository.getApps().get(i).getStages();
+			for (StageController stage : stages) {
+				if (stage.getID().equals(id)) {
+					return stage;
+				}
+			}
+		}
+		return appRepository.getApps().get(0).getStages().get(0);
+		// return null;
+	}
 
-    public CheckMenuItem buildCheckMenuItem(final String text, final String toolTipSelected, final String toolTipNotSelected, final String property,
-            final Boolean value) {
-        final CheckMenuItem menuItem = new CheckMenuItem(text);
-        if (property != null) {
-            Persistence.loadProperty(property, menuItem, value);
-        } else if (value != null) {
-            menuItem.setSelected(value);
-        }
-        menuItem.selectedProperty().addListener(new ChangeListener<Boolean>() {
-            @Override public void changed(final ObservableValue<? extends Boolean> arg0, final Boolean arg1, final Boolean newValue) {
-                setStatusText(newValue ? toolTipSelected : toolTipNotSelected, 4000);
-            }
-        });
+	protected void filterProperties(final String text) {
+		detailsTab.filterProperties(text);
+	}
 
-        return menuItem;
-    }
+	public void setSelectedNode(final StageController controller, final SVNode value) {
+		if (value != selectedNode) {
+			if (controller != null && activeStage != controller) {
+				/**
+				 * Remove selected from previous active
+				 */
+				activeStage.setSelectedNode(null);
+				activeStage = controller;
+			}
+			storeSelectedNode(value);
+			eventsTab.setSelectedNode(value);
+			loadAPI(null);
+			propertyFilterField.setText("");
+			propertyFilterField.setDisable(value == null);
+			filterProperties(propertyFilterField.getText());
+		}
+	}
 
-    private FilterTextField createFilterField(final String prompt) {
-        return createFilterField(prompt, event -> update());
-    }
+	public SVNode getSelectedNode() {
+		return selectedNode;
+	}
 
-    private FilterTextField createFilterField(final String prompt, final EventHandler<KeyEvent> keyHandler) {
-        final FilterTextField filterField = new FilterTextField();
-        filterField.setPromptText(prompt);
-        if (keyHandler != null) {
-            filterField.setOnKeyReleased(keyHandler);
-        }
-        filterField.focusedProperty().addListener((ChangeListener<Boolean>) (o, oldValue, newValue) -> {
-            if (newValue) {
-                setStatusText("Type any text for filtering");
-            } else {
-                clearStatusText();
-            }
-        });
-        return filterField;
-    }
+	public void removeNode() {
+		activeStage.removeSelectedNode();
+	}
 
-    private void closeApps() {
-        for (final Iterator<AppController> iterator = appRepository.getApps().iterator(); iterator.hasNext();) {
-            final AppController stage = iterator.next();
-            stage.close();
-        }
-    }
+	private void storeSelectedNode(final SVNode value) {
+		selectedNode = value;
+		if (selectedNode != null && detailsTab.isSelected())
+			setStatusText("Click on the labels to modify its values. The panel could have different capabilities. When changed the values will be highlighted",
+					8000);
+		activeStage.setSelectedNode(value);
+	}
 
-    public void close() {
-        closeApps();
-        saveProperties();
-        updateStrategy.finish();
-    }
+	public CheckMenuItem buildCheckMenuItem(final String text, final String toolTipSelected, final String toolTipNotSelected, final String property,
+	                                        final Boolean value) {
+		final CheckMenuItem menuItem = new CheckMenuItem(text);
+		if (property != null) {
+			Persistence.loadProperty(property, menuItem, value);
+		} else if (value != null) {
+			menuItem.setSelected(value);
+		}
+		menuItem.selectedProperty().addListener((arg0, arg1, newValue) -> setStatusText(newValue ? toolTipSelected : toolTipNotSelected, 4000));
 
-    private void saveProperties() {
-        Persistence.saveProperties();
-    }
+		return menuItem;
+	}
 
-    public void setStatusText(final String text) {
-        statusBar.setStatusText(text);
-    }
+	private FilterTextField createFilterField(final String prompt) {
+		return createFilterField(prompt, event -> update());
+	}
 
-    public void setStatusText(final String text, final long timeout) {
-        statusBar.setStatusText(text, timeout);
-    }
+	private FilterTextField createFilterField(final String prompt, final EventHandler<KeyEvent> keyHandler) {
+		final FilterTextField filterField = new FilterTextField();
+		filterField.setPromptText(prompt);
+		if (keyHandler != null) {
+			filterField.setOnKeyReleased(keyHandler);
+		}
+		filterField.focusedProperty().addListener((ChangeListener<Boolean>) (o, oldValue, newValue) -> {
+			if (newValue) {
+				setStatusText("Type any text for filtering");
+			} else {
+				clearStatusText();
+			}
+		});
+		return filterField;
+	}
 
-    public void clearStatusText() {
-        statusBar.clearStatusText();
-    }
+	private void closeApps() {
+		for (final AppController stage : appRepository.getApps()) {
+			stage.close();
+		}
+	}
 
-    public boolean hasStatusText() {
-        return statusBar.hasStatus();
-    }
+	public void close() {
+		closeApps();
+		saveProperties();
+		updateStrategy.finish();
+	}
+
+	private void saveProperties() {
+		Persistence.saveProperties();
+	}
+
+	public void setStatusText(final String text) {
+		statusBar.setStatusText(text);
+	}
+
+	public void setStatusText(final String text, final long timeout) {
+		statusBar.setStatusText(text, timeout);
+	}
+
+	public void clearStatusText() {
+		statusBar.clearStatusText();
+	}
+
+	public boolean hasStatusText() {
+		return statusBar.hasStatus();
+	}
 
 //    @Override protected double computePrefWidth(final double height) {
 //        return 600;
@@ -961,9 +898,9 @@ public class ScenicViewGui {
 //                - getPadding().getTop() - getPadding().getBottom(), 0, HPos.LEFT, VPos.TOP);
 //    }
 
-    public final BorderPane getBorderPane() {
-        return rootBorderPane;
-    }
+	public final BorderPane getBorderPane() {
+		return rootBorderPane;
+	}
 
 //    /**
 //     * For autoTesting purposes
@@ -972,183 +909,173 @@ public class ScenicViewGui {
 //        return super.getChildren();
 //    }
 
-    public static void show(final ScenicViewGui scenicview, final Stage stage) {
-        final Scene scene = new Scene(scenicview.rootBorderPane);
-        scene.getStylesheets().addAll(STYLESHEETS);
-        stage.setScene(scene);
-        stage.getIcons().add(APP_ICON);
-        if (scenicview.activeStage != null && scenicview.activeStage instanceof StageControllerImpl)
-            ((StageControllerImpl) scenicview.activeStage).placeStage(stage);
+	public static void show(final ScenicViewGui scenicview, final Stage stage) {
+		final Scene scene = new Scene(scenicview.rootBorderPane);
+		scene.getStylesheets().addAll(STYLESHEETS);
+		stage.setScene(scene);
+		stage.getIcons().add(APP_ICON);
+		if (scenicview.activeStage != null && scenicview.activeStage instanceof StageControllerImpl)
+			((StageControllerImpl) scenicview.activeStage).placeStage(stage);
 
-        stage.addEventHandler(WindowEvent.WINDOW_CLOSE_REQUEST, event -> {
-            Runtime.getRuntime().removeShutdownHook(scenicview.shutdownHook);
-            scenicview.close();
-        });
-        stage.show();
-    }
+		stage.addEventHandler(WindowEvent.WINDOW_CLOSE_REQUEST, event -> {
+			Runtime.getRuntime().removeShutdownHook(scenicview.shutdownHook);
+			scenicview.close();
+		});
+		stage.show();
+	}
 
-    public void openStage(final StageController controller) {
-        controller.setEventDispatcher(stageModelListener);
-        controller.configurationUpdated(configuration);
-    }
+	public void openStage(final StageController controller) {
+		controller.setEventDispatcher(stageModelListener);
+		controller.configurationUpdated(configuration);
+	}
 
-    public void forceUpdate() {
-        update();
-    }
-    
-    public void goToTab(String tabName) {
-        Tab switchToTab = null;
-        for (Tab tab : tabPane.getTabs()) {
-            if (tabName == tab.getText()) {
-                switchToTab = tab;
-                break;
-            }
-        }
-        
-        if (switchToTab != null) {
-            tabPane.getSelectionModel().select(switchToTab);
-        }
-    }
-    
-    private void doDispatchEvent(final FXConnectorEvent appEvent) {
-        switch (appEvent.getType()) {
-            case EVENT_LOG: {
-                eventsTab.trace((EvLogEvent) appEvent);
-                break;
-            }                
-            case MOUSE_POSITION: {
-                if (isActive(appEvent.getStageID()))
-                    statusBar.updateMousePosition(((MousePosEvent) appEvent).getPosition());
-                break;
-            }
-            case SHORTCUT: {
-                final KeyCode c = ((ShortcutEvent) appEvent).getCode();
-                switch (c) {
-                    case S:
-                        componentSelectOnClick.setSelected(!configuration.isComponentSelectOnClick());
-                        break;
-                    case R:
-                        configuration.setShowRuler(!configuration.isShowRuler());
-                        configurationUpdated();
-                        break;
-                    case D:
-                        treeView.getSelectionModel().clearSelection();
-                        break;
-                    default:
-                        break;
-                }
-                break;
-            }
-            case WINDOW_DETAILS: {
-                final WindowDetailsEvent wevent = (WindowDetailsEvent) appEvent;
-                autoRefreshStyleSheets.setDisable(!wevent.isStylesRefreshable());
+	public void forceUpdate() {
+		update();
+	}
 
-                if (isActive(wevent.getStageID())) {
-                    statusBar.updateWindowDetails(wevent.getWindowType(), wevent.getBounds(), wevent.isFocused());
-                }
-                break;
-            }
-            case NODE_SELECTED: {
-                componentSelectOnClick.setSelected(false);
-                treeView.nodeSelected(((NodeSelectedEvent) appEvent).getNode());
-                cssfxTab.setActiveStage(appEvent.getStageID());
+	public void goToTab(String tabName) {
+		Tab switchToTab = null;
+		for (Tab tab : tabPane.getTabs()) {
+			if (tabName == tab.getText()) {
+				switchToTab = tab;
+				break;
+			}
+		}
 
-                scenicViewStage.toFront();
-                break;
-            }
-            case NODE_COUNT: {
-                statusBar.updateNodeCount(((NodeCountEvent) appEvent).getNodeCount());
-                break;
-            }
-            case SCENE_DETAILS: {
-                if (isActive(appEvent.getStageID())) {
-                    final SceneDetailsEvent sEvent = (SceneDetailsEvent) appEvent;
-                    statusBar.updateSceneDetails(sEvent.getSize(), sEvent.getNodeCount());
-                }
-                break;
-            }
-            case ROOT_UPDATED: {
-                treeView.updateStageModel(getStageController(appEvent.getStageID()), 
-                                         ((NodeAddRemoveEvent) appEvent).getNode(), 
-                                         showNodesIdInTree.isSelected(),
-                                         showFilteredNodesInTree.isSelected());
-                threeDOMTab.placeNewRoot(((NodeAddRemoveEvent) appEvent).getNode());
-                cssfxTab.registerStage(appEvent.getStageID());
-                break;
-            }
-            case NODE_ADDED: {
-                /**
-                 * First check if a we have a NODE_REMOVED in the queue
-                 */
-                final int removedPos = indexOfNode(((NodeAddRemoveEvent) appEvent).getNode(), true);
-                if (removedPos == -1) {
-                    treeView.addNewNode(((NodeAddRemoveEvent) appEvent).getNode(), showNodesIdInTree.isSelected(), showFilteredNodesInTree.isSelected());
-                    threeDOMTab.reload();   // 3D addition
-                } else {
-                    eventQueue.remove(removedPos);
-                }
-               
-                break;
-            }
-            case NODE_REMOVED: {
-                final int addedPos = indexOfNode(((NodeAddRemoveEvent) appEvent).getNode(), false);
-                if (addedPos == -1) {
-                    treeView.removeNode(((NodeAddRemoveEvent) appEvent).getNode());
-                    threeDOMTab.removeNode(((NodeAddRemoveEvent) appEvent).getNode());   // 3D addition
-                } else {
-                    eventQueue.remove(addedPos);
-                }
-                break;
-            }
-            case DETAILS: {
-                final DetailsEvent ev = (DetailsEvent) appEvent;
-                detailsTab.updateDetails(ev.getPaneType(), ev.getPaneName(), ev.getDetails(), (detail, value) -> {
-                    getStageController(appEvent.getStageID()).setDetail(detail.getDetailType(), detail.getDetailID(), value);   
-                });
-                break;
-            }
-            case DETAIL_UPDATED: {
-                final DetailsEvent ev2 = (DetailsEvent) appEvent;
-                detailsTab.updateDetail(ev2.getPaneType(), ev2.getPaneName(), ev2.getDetails().get(0));
-                break;
-            }
-            case ANIMATIONS_UPDATED: {
-                animationsTab.update(appEvent.getStageID(), ((AnimationsCountEvent) appEvent).getAnimations());
-                break;
-            }
-            case CSS_ADDED: 
-            case CSS_REMOVED: 
-            case CSS_REPLACED: 
-                cssfxTab.handleEvent(appEvent);
-                break;
-            default: {
-                Logger.print("Unused event for type " + appEvent);
-                break;
-            }
-        }
-    }
+		if (switchToTab != null) {
+			tabPane.getSelectionModel().select(switchToTab);
+		}
+	}
 
-    private int indexOfNode(final SVNode node, final boolean add) {
-        for (int i = 0; i < eventQueue.size(); i++) {
-            final FXConnectorEvent ev = eventQueue.get(i);
-            if ((add && ev.getType() == SVEventType.NODE_REMOVED) || (!add && ev.getType() == SVEventType.NODE_ADDED)) {
-                final NodeAddRemoveEvent ev2 = (NodeAddRemoveEvent) ev;
-                if (ev2.getNode().equals(node)) {
-                    return i;
-                }
-            }
-        }
-        return -1;
-    }
+	private void doDispatchEvent(final FXConnectorEvent appEvent) {
+		switch (appEvent.getType()) {
+			case EVENT_LOG: {
+				eventsTab.trace((EvLogEvent) appEvent);
+				break;
+			}
+			case MOUSE_POSITION: {
+				if (isActive(appEvent.getStageID()))
+					statusBar.updateMousePosition(((MousePosEvent) appEvent).getPosition());
+				break;
+			}
+			case SHORTCUT: {
+				final KeyCode c = ((ShortcutEvent) appEvent).getCode();
+				switch (c) {
+					case S -> componentSelectOnClick.setSelected(!configuration.isComponentSelectOnClick());
+					case R -> {
+						configuration.setShowRuler(!configuration.isShowRuler());
+						configurationUpdated();
+					}
+					case D -> treeView.getSelectionModel().clearSelection();
+					default -> {
+					}
+				}
+				break;
+			}
+			case WINDOW_DETAILS: {
+				final WindowDetailsEvent wevent = (WindowDetailsEvent) appEvent;
+				autoRefreshStyleSheets.setDisable(!wevent.isStylesRefreshable());
 
-    private boolean isActive(final StageID stageID) {
-        return activeStage.getID().equals(stageID);
-    }
-    /**
-     * 3D additions
-     * @return scene graph treeview
-     */
-    public ScenegraphTreeView getTreeView(){
-         return treeView;
-     }
+				if (isActive(wevent.getStageID())) {
+					statusBar.updateWindowDetails(wevent.getWindowType(), wevent.getBounds(), wevent.isFocused());
+				}
+				break;
+			}
+			case NODE_SELECTED: {
+				componentSelectOnClick.setSelected(false);
+				treeView.nodeSelected(((NodeSelectedEvent) appEvent).getNode());
+
+				scenicViewStage.toFront();
+				break;
+			}
+			case NODE_COUNT: {
+				statusBar.updateNodeCount(((NodeCountEvent) appEvent).getNodeCount());
+				break;
+			}
+			case SCENE_DETAILS: {
+				if (isActive(appEvent.getStageID())) {
+					final SceneDetailsEvent sEvent = (SceneDetailsEvent) appEvent;
+					statusBar.updateSceneDetails(sEvent.getSize(), sEvent.getNodeCount());
+				}
+				break;
+			}
+			case ROOT_UPDATED: {
+				treeView.updateStageModel(getStageController(appEvent.getStageID()),
+						((NodeAddRemoveEvent) appEvent).getNode(),
+						showNodesIdInTree.isSelected(),
+						showFilteredNodesInTree.isSelected());
+				break;
+			}
+			case NODE_ADDED: {
+				/**
+				 * First check if a we have a NODE_REMOVED in the queue
+				 */
+				final int removedPos = indexOfNode(((NodeAddRemoveEvent) appEvent).getNode(), true);
+				if (removedPos == -1) {
+					treeView.addNewNode(((NodeAddRemoveEvent) appEvent).getNode(), showNodesIdInTree.isSelected(), showFilteredNodesInTree.isSelected());
+				} else {
+					eventQueue.remove(removedPos);
+				}
+
+				break;
+			}
+			case NODE_REMOVED: {
+				final int addedPos = indexOfNode(((NodeAddRemoveEvent) appEvent).getNode(), false);
+				if (addedPos == -1) {
+					treeView.removeNode(((NodeAddRemoveEvent) appEvent).getNode());
+				} else {
+					eventQueue.remove(addedPos);
+				}
+				break;
+			}
+			case DETAILS: {
+				final DetailsEvent ev = (DetailsEvent) appEvent;
+				detailsTab.updateDetails(ev.getPaneType(), ev.getPaneName(), ev.getDetails(), (detail, value) -> getStageController(appEvent.getStageID()).setDetail(detail.getDetailType(), detail.getDetailID(), value));
+				break;
+			}
+			case DETAIL_UPDATED: {
+				final DetailsEvent ev2 = (DetailsEvent) appEvent;
+				detailsTab.updateDetail(ev2.getPaneType(), ev2.getPaneName(), ev2.getDetails().get(0));
+				break;
+			}
+			case ANIMATIONS_UPDATED: {
+				animationsTab.update(appEvent.getStageID(), ((AnimationsCountEvent) appEvent).getAnimations());
+				break;
+			}
+			case CSS_ADDED:
+			case CSS_REMOVED:
+			case CSS_REPLACED:
+				break;
+			default: {
+				Logger.print("Unused event for type " + appEvent);
+				break;
+			}
+		}
+	}
+
+	private int indexOfNode(final SVNode node, final boolean add) {
+		for (int i = 0; i < eventQueue.size(); i++) {
+			final FXConnectorEvent ev = eventQueue.get(i);
+			if ((add && ev.getType() == SVEventType.NODE_REMOVED) || (!add && ev.getType() == SVEventType.NODE_ADDED)) {
+				final NodeAddRemoveEvent ev2 = (NodeAddRemoveEvent) ev;
+				if (ev2.getNode().equals(node)) {
+					return i;
+				}
+			}
+		}
+		return -1;
+	}
+
+	private boolean isActive(final StageID stageID) {
+		return activeStage.getID().equals(stageID);
+	}
+
+	/**
+	 * 3D additions
+	 *
+	 * @return scene graph treeview
+	 */
+	public ScenegraphTreeView getTreeView() {
+		return treeView;
+	}
 }

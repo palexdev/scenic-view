@@ -1,6 +1,6 @@
 /*
- * Scenic View, 
- * Copyright (C) 2012 Jonathan Giles, Ander Ruiz, Amy Fowler 
+ * Scenic View,
+ * Copyright (C) 2012 Jonathan Giles, Ander Ruiz, Amy Fowler
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,19 +22,19 @@ import org.fxconnector.node.SVNode;
 
 public class NodeAddRemoveEvent extends FXConnectorEvent {
 
-    /**
-     * 
-     */
-    private static final long serialVersionUID = 3697198794332055904L;
-    private final SVNode node;
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = 3697198794332055904L;
+	private final SVNode node;
 
-    public NodeAddRemoveEvent(final SVEventType type, final StageID id, final SVNode node) {
-        super(type, id);
-        this.node = node;
-    }
+	public NodeAddRemoveEvent(final SVEventType type, final StageID id, final SVNode node) {
+		super(type, id);
+		this.node = node;
+	}
 
-    public SVNode getNode() {
-        return node;
-    }
+	public SVNode getNode() {
+		return node;
+	}
 
 }

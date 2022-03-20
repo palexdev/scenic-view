@@ -1,6 +1,6 @@
 /*
- * Scenic View, 
- * Copyright (C) 2012 Jonathan Giles, Ander Ruiz, Amy Fowler 
+ * Scenic View,
+ * Copyright (C) 2012 Jonathan Giles, Ander Ruiz, Amy Fowler
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,17 +21,17 @@ import java.rmi.RemoteException;
 
 public class FXConnectorFactory {
 
-    static FXConnector connector;
+	static FXConnector connector;
 
-    private FXConnectorFactory() {
-        // no-op
-    }
+	private FXConnectorFactory() {
+		// no-op
+	}
 
-    public static synchronized FXConnector getConnector() throws RemoteException {
-        if (connector == null) {
-            connector = new RemoteConnectorImpl();
-        }
-        return connector;
-    }
+	public static synchronized FXConnector getConnector() throws RemoteException {
+		if (connector == null) {
+			connector = new RemoteConnectorImpl();
+		}
+		return connector;
+	}
 
 }

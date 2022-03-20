@@ -1,17 +1,15 @@
 plugins {
     id 'application'
-    id 'org.openjfx.javafxplugin' version '0.0.7'
-    id 'org.beryx.jlink' version '2.6.5'
+    id 'org.openjfx.javafxplugin' version '0.0.12'
+    id 'org.beryx.jlink' version '2.25.0'
+    id 'com.vanniktech.maven.publish' version '0.19.0'
 }
 
 mainClassName = "org.scenicview.scenicview/org.scenicview.ScenicView"
-group = 'org.scenic-view'
-version = '11.0.2'
+group = 'io.github.palexdev'
+version = '17.0.2'
 
 defaultTasks 'install'
-
-sourceCompatibility = '1.9'
-targetCompatibility = '1.9'
 
 repositories {
     mavenCentral()
@@ -22,14 +20,15 @@ configurations {
     binTray
 }
 
-sourceSets {
+/*sourceSets {
     main {
         compileClasspath += configurations.jdk
     }
-}
+}*/
 
 javafx {
-    modules = ['javafx.web', 'javafx.fxml', 'javafx.swing']
+    version = '18'
+    modules = ['javafx.controls', 'javafx.fxml']
 }
 
 jar {
@@ -45,11 +44,37 @@ jar {
 }
 
 run {
-	dependsOn jar
+    dependsOn jar
+}
+
+javadoc {
+    excludes = ['**/*.html', 'META-INF/**']
+
+    options.use = true
+    options.splitIndex = true
+    options.encoding = 'UTF-8'
+    options.author = true
+    options.version = true
+    options.windowTitle = "$project.name $project.version API"
+    options.docTitle = "$project.name $project.version API"
+    options.links = ['https://docs.oracle.com/en/java/javase/11/docs/api',
+                     'https://openjfx.io/javadoc/18']
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    archiveClassifier.set('javadoc')
+    from javadoc.destinationDir
+}
+
+task sourcesJarBuild(type: Jar, dependsOn: classes) {
+    archiveClassifier.set('sources')
+    from sourceSets.main.allSource
 }
 
 artifacts {
-    archives(jar)
+    archives javadocJar
+    archives sourcesJarBuild
+    archives jar
 }
 
 ext.platform = osdetector.os == 'osx' ? 'mac' : osdetector.os == 'windows' ? 'win' : osdetector.os
@@ -68,5 +93,13 @@ tasks.jlink.doLast {
     copy {
         from "${buildDir}/libs/scenicview.jar"
         into "${buildDir}/scenicview/lib"
+    }
+}
+
+allprojects {
+    plugins.withId("com.vanniktech.maven.publish") {
+        mavenPublish {
+            sonatypeHost = "S01"
+        }
     }
 }

@@ -18,131 +18,134 @@
 
 
 .split-pane {
-    -fx-background-insets: 0, 1 0 1 0;
-    -fx-padding: 0 0 1 0;
+	-fx-background-insets: 0, 1 0 1 0;
+	-fx-padding: 0 0 1 0;
 }
-.split-pane *.split-pane-divider{
-    -fx-padding: 0 1 0 0;
-    -fx-background-color: transparent, -fx-box-border;
-    -fx-background-insets: 0 -3 0 -3, 0;
-    -fx-border-color: null;
+
+.split-pane *.split-pane-divider {
+	-fx-padding: 0 1 0 0;
+	-fx-background-color: transparent, -fx-box-border;
+	-fx-background-insets: 0 -3 0 -3, 0;
+	-fx-border-color: null;
 }
+
 .split-pane *.horizontal-grabber {
-    -fx-padding: 0;
-    -fx-shape: "";
+	-fx-padding: 0;
+	-fx-shape: "";
 }
 
 .tree-view {
-    -fx-background-insets: 0, 0 0 -1 0;
-    -fx-background-radius: 0;
-    -fx-padding: 0;
+	-fx-background-insets: 0, 0 0 -1 0;
+	-fx-background-radius: 0;
+	-fx-padding: 0;
 }
 
 .scanning-label {
-    -fx-font-size:12;
-    -fx-font-weight: bold;
+	-fx-font-size: 12;
+	-fx-font-weight: bold;
 }
 
 .scroll-pane {
-    -fx-padding: 0;
-    -fx-background-insets: 0;
+	-fx-padding: 0;
+	-fx-background-insets: 0;
 }
 
 .detail-pane #title-label {
-    -fx-font: bold 12pt System;
+	-fx-font: bold 12pt System;
 }
 
 .detail-grid {
-    -fx-background-insets: 0,1,2;
-    -fx-background-radius: 0,0,0;
-    -fx-padding: 4 6 6 6;
-    -fx-hgap: 4;
-    -fx-vgap: 1;
+	-fx-background-insets: 0, 1, 2;
+	-fx-background-radius: 0, 0, 0;
+	-fx-padding: 4 6 6 6;
+	-fx-hgap: 4;
+	-fx-vgap: 1;
 }
 
 .titled-pane > .title {
-    -fx-background-radius: 0, 0, 0;
-    
+	-fx-background-radius: 0, 0, 0;
+
 }
+
 .titled-pane > *.content {
-    -fx-background-insets: 0, 0 0 0 0;
-    -fx-padding: 0 0 -1 0;
+	-fx-background-insets: 0, 0 0 0 0;
+	-fx-padding: 0 0 -1 0;
 }
 
 .detail-pane .detail-label {
-    -fx-font-weight: bold;
-    -fx-text-fill: #0082dd;
+	-fx-font-weight: bold;
+	-fx-text-fill: #0082dd;
 }
 
 .detail-pane .updated-detail-label {
-    -fx-font-weight: bold;
-    -fx-text-fill: #FF0000;
+	-fx-font-weight: bold;
+	-fx-text-fill: #FF0000;
 }
 
 .detail-pane .detail-value {
-    -fx-text-fill: black;
-    -fx-font-weight: normal;
-    -fx-font-size: 11;
+	-fx-text-fill: black;
+	-fx-font-weight: normal;
+	-fx-font-size: 11;
 }
 
 .detail-pane .detail-field {
-    -fx-text-fill: black;
+	-fx-text-fill: black;
 }
 
 .constraints-display {
-    -fx-padding: 2 2 2 2;
+	-fx-padding: 2 2 2 2;
 }
 
 .constraints-display .label.key {
-    -fx-text-fill: #0082dd;
+	-fx-text-fill: #0082dd;
 }
 
 .gridpane-constraint-display {
-    -fx-padding: 2 2 2 2;
-    -fx-background-color: #eeeeee;
+	-fx-padding: 2 2 2 2;
+	-fx-background-color: #eeeeee;
 }
 
 .gridpane-constraint-display .label {
-    -fx-text-fill: #0082dd;
+	-fx-text-fill: #0082dd;
 }
 
 
 .search-bar .label {
-    -fx-font-weight: bold;
+	-fx-font-weight: bold;
 }
 
 #main-statusbar {
-    -fx-padding: 3 4 3 4;
-    -fx-spacing: 4;
+	-fx-padding: 3 4 3 4;
+	-fx-spacing: 4;
 }
+
 #main-statusbar .value-name {
-    -fx-font-weight: bold;
+	-fx-font-weight: bold;
 }
 
 .animations-table-view .table-cell {
-     -fx-alignment: BASELINE_RIGHT;
- }
-
-
-
-
+	-fx-alignment: BASELINE_RIGHT;
+}
 
 
 .tab-pane > .tab-header-area > .tab-header-background {
-    -fx-effect: null;
+	-fx-effect: null;
 }
+
 /*
  * For Testing
  */
 
 .color {
-    -fx-fill: orange;
+	-fx-fill: orange;
 }
+
 #rect4 {
-    -fx-arc-width: 10;
-    -fx-arc-height: 10;
+	-fx-arc-width: 10;
+	-fx-arc-height: 10;
 }
+
 #First {
-    -fx-font: bold 12pt System;
-    -fx-background-color: red;
+	-fx-font: bold 12pt System;
+	-fx-background-color: red;
 }

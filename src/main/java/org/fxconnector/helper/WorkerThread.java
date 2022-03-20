@@ -1,6 +1,6 @@
 /*
- * Scenic View, 
- * Copyright (C) 2012 Jonathan Giles, Ander Ruiz, Amy Fowler 
+ * Scenic View,
+ * Copyright (C) 2012 Jonathan Giles, Ander Ruiz, Amy Fowler
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,34 +21,35 @@ import org.scenicview.utils.ExceptionLogger;
 
 public abstract class WorkerThread extends Thread {
 
-    protected boolean running = true;
-    protected final int sleepTime;
+	protected boolean running = true;
+	protected final int sleepTime;
 
-    public WorkerThread(final String name, final int sleepTime) {
-        super(name);
-        setDaemon(true);
-        this.sleepTime = sleepTime;
-    }
+	public WorkerThread(final String name, final int sleepTime) {
+		super(name);
+		setDaemon(true);
+		this.sleepTime = sleepTime;
+	}
 
-    public void finish() {
-        this.running = false;
-        interrupt();
-    }
+	public void finish() {
+		this.running = false;
+		interrupt();
+	}
 
-    @Override public void run() {
-        long sleepTime = 0;
-        while (running) {
-            try {
-                Thread.sleep(sleepTime);
-                work();
-            } catch (final Exception e) {
-                if (running) {
-                    ExceptionLogger.submitException(e);
-                }
-            }
-            sleepTime = this.sleepTime;
-        }
-    }
+	@Override
+	public void run() {
+		long sleepTime = 0;
+		while (running) {
+			try {
+				Thread.sleep(sleepTime);
+				work();
+			} catch (final Exception e) {
+				if (running) {
+					ExceptionLogger.submitException(e);
+				}
+			}
+			sleepTime = this.sleepTime;
+		}
+	}
 
-    protected abstract void work();
+	protected abstract void work();
 }

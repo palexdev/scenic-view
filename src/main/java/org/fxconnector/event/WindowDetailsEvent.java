@@ -1,6 +1,6 @@
 /*
- * Scenic View, 
- * Copyright (C) 2012 Jonathan Giles, Ander Ruiz, Amy Fowler 
+ * Scenic View,
+ * Copyright (C) 2012 Jonathan Giles, Ander Ruiz, Amy Fowler
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,37 +21,37 @@ import org.fxconnector.StageID;
 
 public class WindowDetailsEvent extends FXConnectorEvent {
 
-    /**
-     * 
-     */
-    private static final long serialVersionUID = 6484452153829938311L;
-    private final String windowType;
-    private final String bounds;
-    private final boolean focused;
-    private final boolean stylesRefreshable;
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = 6484452153829938311L;
+	private final String windowType;
+	private final String bounds;
+	private final boolean focused;
+	private final boolean stylesRefreshable;
 
-    public WindowDetailsEvent(final StageID id, final String windowType, final String bounds, final boolean focused, final boolean stylesRefreshable) {
-        super(SVEventType.WINDOW_DETAILS, id);
-        this.windowType = windowType;
-        this.bounds = bounds;
-        this.focused = focused;
-        this.stylesRefreshable = stylesRefreshable;
-    }
+	public WindowDetailsEvent(final StageID id, final String windowType, final String bounds, final boolean focused, final boolean stylesRefreshable) {
+		super(SVEventType.WINDOW_DETAILS, id);
+		this.windowType = windowType;
+		this.bounds = bounds;
+		this.focused = focused;
+		this.stylesRefreshable = stylesRefreshable;
+	}
 
-    public String getWindowType() {
-        return windowType;
-    }
+	public String getWindowType() {
+		return windowType;
+	}
 
-    public String getBounds() {
-        return bounds;
-    }
+	public String getBounds() {
+		return bounds;
+	}
 
-    public boolean isFocused() {
-        return focused;
-    }
+	public boolean isFocused() {
+		return focused;
+	}
 
-    public boolean isStylesRefreshable() {
-        return stylesRefreshable;
-    }
+	public boolean isStylesRefreshable() {
+		return stylesRefreshable;
+	}
 
 }

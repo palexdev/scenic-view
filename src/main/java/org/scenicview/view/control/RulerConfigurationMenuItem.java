@@ -1,6 +1,6 @@
 /*
- * Scenic View, 
- * Copyright (C) 2012 Jonathan Giles, Ander Ruiz, Amy Fowler 
+ * Scenic View,
+ * Copyright (C) 2012 Jonathan Giles, Ander Ruiz, Amy Fowler
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,23 +17,23 @@
  */
 package org.scenicview.view.control;
 
-import javafx.beans.property.*;
-import javafx.event.*;
-import javafx.scene.control.*;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.scene.control.MenuItem;
 import javafx.scene.paint.Color;
 
 public class RulerConfigurationMenuItem extends MenuItem {
 
-    ObjectProperty<Color> color = new SimpleObjectProperty<>();
-    IntegerProperty rulerSeparation = new SimpleIntegerProperty(10);
+	final ObjectProperty<Color> color = new SimpleObjectProperty<>();
+	final IntegerProperty rulerSeparation = new SimpleIntegerProperty(10);
 
-    public RulerConfigurationMenuItem() {
-        setColor(Color.BLACK);
-        setText("Configure Ruler");
-        setOnAction(new EventHandler<ActionEvent>() {
-
-            @Override public void handle(final ActionEvent arg0) {
-                throw new RuntimeException("CustomColorDialog unavailable in JDK 9");
+	public RulerConfigurationMenuItem() {
+		setColor(Color.BLACK);
+		setText("Configure Ruler");
+		setOnAction(arg0 -> {
+			throw new RuntimeException("CustomColorDialog unavailable in JDK 9");
 //                final CustomColorDialog dialog = new CustomColorDialog(null);
 //                dialog.setId(StageController.FX_CONNECTOR_BASE_ID + ".ColorPicker");
 //                dialog.setCurrentColor(color.get());
@@ -92,24 +92,23 @@ public class RulerConfigurationMenuItem extends MenuItem {
 //                dialog.setLayoutX(400);
 //                dialog.setLayoutY(300);
 //                dialog.show();
-            }
-        });
-    }
+		});
+	}
 
-    public void setColor(final Color color) {
-        this.color.set(color);
-    }
+	public void setColor(final Color color) {
+		this.color.set(color);
+	}
 
-    public Color getColor() {
-        return this.color.get();
-    }
+	public Color getColor() {
+		return this.color.get();
+	}
 
-    public ObjectProperty<Color> colorProperty() {
-        return this.color;
-    }
+	public ObjectProperty<Color> colorProperty() {
+		return this.color;
+	}
 
-    public IntegerProperty rulerSeparationProperty() {
-        return this.rulerSeparation;
-    }
+	public IntegerProperty rulerSeparationProperty() {
+		return this.rulerSeparation;
+	}
 
 }

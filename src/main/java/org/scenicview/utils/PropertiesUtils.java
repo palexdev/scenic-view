@@ -1,6 +1,6 @@
 /*
- * Scenic View, 
- * Copyright (C) 2012 Jonathan Giles, Ander Ruiz, Amy Fowler 
+ * Scenic View,
+ * Copyright (C) 2012 Jonathan Giles, Ander Ruiz, Amy Fowler
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,61 +17,57 @@
  */
 package org.scenicview.utils;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.util.Properties;
 
 public class PropertiesUtils {
 
-    private static final String SCENIC_VIEW_PROPERTIES_FILE = "scenicView.properties";
-    
-    private static Properties properties;
+	private static final String SCENIC_VIEW_PROPERTIES_FILE = "scenicView.properties";
 
-    private PropertiesUtils() {
-        
-    }
-    
-    public static Properties getProperties() {
-        if (properties == null) {
-            properties = loadProperties();
-        }
-        return properties;
-    }
-    
-    public static boolean containsKey(String key) {
-        return getProperties().contains(key);
-    }
+	private static Properties properties;
 
-    private static Properties loadProperties() {
-        Properties _properties = new Properties();
-        
-        try {
-            final File propertiesFile = new File(SCENIC_VIEW_PROPERTIES_FILE);
-            if (propertiesFile.exists()) {
-                final FileInputStream in = new FileInputStream(propertiesFile);
-                try {
-                    _properties.load(in);
-                } finally {
-                    in.close();
-                }
-            }
-        } catch (final Exception e) {
-            Logger.print("Error while loading preferences");
-        }
-        return _properties;
-    }
+	private PropertiesUtils() {
 
-    public static void saveProperties() {
-        try {
-            final File propertiesFile = new File(SCENIC_VIEW_PROPERTIES_FILE);
-            final FileOutputStream out = new FileOutputStream(propertiesFile);
-            try {
-                properties.store(out, "ScenicView properties");
-            } finally {
-                out.close();
-            }
-        } catch (final Exception e) {
-            ExceptionLogger.submitException(e, "Error while saving preferences");
-        }
-    }
+	}
+
+	public static Properties getProperties() {
+		if (properties == null) {
+			properties = loadProperties();
+		}
+		return properties;
+	}
+
+	public static boolean containsKey(String key) {
+		return getProperties().contains(key);
+	}
+
+	private static Properties loadProperties() {
+		Properties _properties = new Properties();
+
+		try {
+			final File propertiesFile = new File(SCENIC_VIEW_PROPERTIES_FILE);
+			if (propertiesFile.exists()) {
+				try (FileInputStream in = new FileInputStream(propertiesFile)) {
+					_properties.load(in);
+				}
+			}
+		} catch (final Exception e) {
+			Logger.print("Error while loading preferences");
+		}
+		return _properties;
+	}
+
+	public static void saveProperties() {
+		try {
+			final File propertiesFile = new File(SCENIC_VIEW_PROPERTIES_FILE);
+			try (FileOutputStream out = new FileOutputStream(propertiesFile)) {
+				properties.store(out, "ScenicView properties");
+			}
+		} catch (final Exception e) {
+			ExceptionLogger.submitException(e, "Error while saving preferences");
+		}
+	}
 
 }

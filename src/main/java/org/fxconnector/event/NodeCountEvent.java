@@ -1,6 +1,6 @@
 /*
- * Scenic View, 
- * Copyright (C) 2012 Jonathan Giles, Ander Ruiz, Amy Fowler 
+ * Scenic View,
+ * Copyright (C) 2012 Jonathan Giles, Ander Ruiz, Amy Fowler
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,23 +21,23 @@ import org.fxconnector.StageID;
 
 public class NodeCountEvent extends FXConnectorEvent {
 
-    /**
-     * 
-     */
-    private static final long serialVersionUID = 1192149233377886461L;
-    private final int nodeCount;
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = 1192149233377886461L;
+	private final int nodeCount;
 
-    public NodeCountEvent(final StageID id, final int nodeCount) {
-        this(SVEventType.NODE_COUNT, id, nodeCount);
-    }
+	public NodeCountEvent(final StageID id, final int nodeCount) {
+		this(SVEventType.NODE_COUNT, id, nodeCount);
+	}
 
-    protected NodeCountEvent(final SVEventType type, final StageID id, final int nodeCount) {
-        super(type, id);
-        this.nodeCount = nodeCount;
-    }
+	protected NodeCountEvent(final SVEventType type, final StageID id, final int nodeCount) {
+		super(type, id);
+		this.nodeCount = nodeCount;
+	}
 
-    public int getNodeCount() {
-        return nodeCount;
-    }
+	public int getNodeCount() {
+		return nodeCount;
+	}
 
 }

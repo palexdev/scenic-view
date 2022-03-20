@@ -1,6 +1,6 @@
 /*
- * Scenic View, 
- * Copyright (C) 2012 Jonathan Giles, Ander Ruiz, Amy Fowler 
+ * Scenic View,
+ * Copyright (C) 2012 Jonathan Giles, Ander Ruiz, Amy Fowler
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,41 +18,40 @@
 package org.scenicview.utils;
 
 import java.io.File;
-import java.net.*;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 
 public class Utils {
 
-    public static boolean checkPath(final String path) {
-        if (path != null && !path.equals("")) {
-            File file = new File(path);
-            if (file.exists()) {
-                return true;
-            }
-        }
-        return false;
-    }
+	public static boolean checkPath(final String path) {
+		if (path != null && !path.equals("")) {
+			File file = new File(path);
+			return file.exists();
+		}
+		return false;
+	}
 
-    public static URI toURI(final String uri) {
-        try {
-            if (new File(uri).exists()) {
-                return encodePath(new File(uri).getAbsolutePath());
-            }
-            return new URI(uri);
-        } catch (final URISyntaxException e) {
-            ExceptionLogger.submitException(e);
-            return null;
-        }
-    }
+	public static URI toURI(final String uri) {
+		try {
+			if (new File(uri).exists()) {
+				return encodePath(new File(uri).getAbsolutePath());
+			}
+			return new URI(uri);
+		} catch (final URISyntaxException e) {
+			ExceptionLogger.submitException(e);
+			return null;
+		}
+	}
 
-    private static URI encodePath(final String path) {
-        try {
-            @SuppressWarnings("deprecation") final URL url = new File(path).toURL();
-            return new URI(url.getProtocol(), url.getHost(), url.getPath(), null);
-        } catch (final URISyntaxException ex) {
-            ex.printStackTrace();
-        } catch (final MalformedURLException ex) {
-            ex.printStackTrace();
-        }
-        return null;
-    }
+	private static URI encodePath(final String path) {
+		try {
+			@SuppressWarnings("deprecation") final URL url = new File(path).toURL();
+			return new URI(url.getProtocol(), url.getHost(), url.getPath(), null);
+		} catch (final URISyntaxException | MalformedURLException ex) {
+			ex.printStackTrace();
+		}
+		return null;
+	}
 }

@@ -1,6 +1,6 @@
 /*
- * Scenic View, 
- * Copyright (C) 2012 Jonathan Giles, Ander Ruiz, Amy Fowler 
+ * Scenic View,
+ * Copyright (C) 2012 Jonathan Giles, Ander Ruiz, Amy Fowler
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,136 +17,116 @@
  */
 package org.scenicview.view.tabs;
 
+import javafx.beans.binding.DoubleBinding;
+import javafx.beans.property.ReadOnlyBooleanProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Node;
+import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.VBox;
+import org.fxconnector.event.EvLogEvent;
+import org.fxconnector.node.SVNode;
+import org.scenicview.view.ContextMenuContainer;
+import org.scenicview.view.DisplayUtils;
+import org.scenicview.view.ScenicViewGui;
+import org.scenicview.view.control.FilterTextField;
+import org.scenicview.view.dialog.InfoBox;
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import javafx.beans.binding.DoubleBinding;
-import javafx.beans.property.ReadOnlyBooleanProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
-import javafx.scene.Node;
-import javafx.scene.control.CheckMenuItem;
-import javafx.scene.control.ChoiceBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.Menu;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TableCell;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.scene.input.KeyEvent;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.VBox;
-import javafx.util.Callback;
-
-import org.fxconnector.event.EvLogEvent;
-import org.fxconnector.node.SVNode;
-import org.scenicview.view.control.FilterTextField;
-import org.scenicview.view.dialog.InfoBox;
-import org.scenicview.view.ContextMenuContainer;
-import org.scenicview.view.DisplayUtils;
-import org.scenicview.view.ScenicViewGui;
-
 public class EventLogTab extends Tab implements ContextMenuContainer {
 
     public static final String TAB_NAME = "Events";
-    
+
     private static final int MAX_EVENTS = 5000;
 
     private final ScenicViewGui scenicView;
-    
-    private TableView<ScenicViewEvent> table = new TableView<>();
-    private ChoiceBox<String> showStack = new ChoiceBox<>();
-    private CheckMenuItem activateTrace = new CheckMenuItem("Enable Event Tracing");
-    private ObservableList<ScenicViewEvent> events = FXCollections.observableArrayList();
-    private ObservableList<ScenicViewEvent> filteredEvents = FXCollections.observableArrayList();
-    private SimpleDateFormat format = new SimpleDateFormat("HH:mm:ss.SSS");
+
+    private final TableView<ScenicViewEvent> table = new TableView<>();
+    private final ChoiceBox<String> showStack = new ChoiceBox<>();
+    private final CheckMenuItem activateTrace = new CheckMenuItem("Enable Event Tracing");
+    private final ObservableList<ScenicViewEvent> events = FXCollections.observableArrayList();
+    private final ObservableList<ScenicViewEvent> filteredEvents = FXCollections.observableArrayList();
+    private final SimpleDateFormat format = new SimpleDateFormat("HH:mm:ss.SSS");
     private FilterTextField idFilterField;
-    private Label selectedNodeLabel = new Label("Enable event tracing in the Events menu");
+    private final Label selectedNodeLabel = new Label("Enable event tracing in the Events menu");
     private SVNode selectedNode;
 
     private Menu menu;
 
     private static final Image MORE_INFO = DisplayUtils.getUIImage("info.png");
-    
+
     public EventLogTab(final ScenicViewGui view) {
         super(TAB_NAME);
-        
+
         this.scenicView = view;
-        
+
         setContent(buildUI());
         setGraphic(new ImageView(DisplayUtils.getUIImage("flag_red.png")));
         setClosable(false);
     }
-    
+
     @SuppressWarnings("unchecked")
     private Node buildUI() {
         VBox vbox = new VBox();
-        
+
         table.setEditable(false);
         table.getStyleClass().add("trace-text-area");
         final DoubleBinding size = vbox.widthProperty().subtract(MORE_INFO.getWidth() + 7).divide(4);
         final TableColumn<ScenicViewEvent, String> sourceCol = new TableColumn<>("source");
-        sourceCol.setCellValueFactory(new PropertyValueFactory<ScenicViewEvent, String>("source"));
+        sourceCol.setCellValueFactory(new PropertyValueFactory<>("source"));
         sourceCol.prefWidthProperty().bind(size);
         final TableColumn<ScenicViewEvent, String> eventTypeCol = new TableColumn<>("eventType");
-        eventTypeCol.setCellValueFactory(new PropertyValueFactory<ScenicViewEvent, String>("eventType"));
+        eventTypeCol.setCellValueFactory(new PropertyValueFactory<>("eventType"));
         eventTypeCol.prefWidthProperty().bind(size);
         final TableColumn<ScenicViewEvent, String> eventValueCol = new TableColumn<>("eventValue");
         eventValueCol.prefWidthProperty().bind(size);
-        eventValueCol.setCellValueFactory(new PropertyValueFactory<ScenicViewEvent, String>("eventValue"));
+        eventValueCol.setCellValueFactory(new PropertyValueFactory<>("eventValue"));
         final TableColumn<ScenicViewEvent, String> momentCol = new TableColumn<>("moment");
-        momentCol.setCellValueFactory(new PropertyValueFactory<ScenicViewEvent, String>("moment"));
+        momentCol.setCellValueFactory(new PropertyValueFactory<>("moment"));
         momentCol.prefWidthProperty().bind(size);
         final TableColumn<ScenicViewEvent, StackTraceElement[]> moreInfoCol = new TableColumn<>("info");
-        moreInfoCol.setCellValueFactory(new PropertyValueFactory<ScenicViewEvent, StackTraceElement[]>("stackTrace"));
-        moreInfoCol.setCellFactory(new Callback<TableColumn<ScenicViewEvent, StackTraceElement[]>, TableCell<ScenicViewEvent, StackTraceElement[]>>() {
+        moreInfoCol.setCellValueFactory(new PropertyValueFactory<>("stackTrace"));
+        moreInfoCol.setCellFactory(arg0 -> {
+            final TableCell<ScenicViewEvent, StackTraceElement[]> cell = new TableCell<>() {
+                {
+                    setId("");
+                    setAlignment(Pos.CENTER);
+                }
 
-            @Override public TableCell<ScenicViewEvent, StackTraceElement[]> call(final TableColumn<ScenicViewEvent, StackTraceElement[]> arg0) {
-                final TableCell<ScenicViewEvent, StackTraceElement[]> cell = new TableCell<ScenicViewEvent, StackTraceElement[]>() {
-                    {
-                        setId("");
-                        setAlignment(Pos.CENTER);
+                @Override
+                public void updateItem(final StackTraceElement[] item, final boolean empty) {
+                    if (empty || item == null) {
+                        setText("");
+                        setGraphic(null);
+                    } else {
+                        setGraphic(new ImageView(MORE_INFO));
                     }
-                    
-                    @Override public void updateItem(final StackTraceElement[] item, final boolean empty) {
-                        if (empty || item == null) {
-                            setText("");
-                            setGraphic(null);
-                        } else {
-                            setGraphic(new ImageView(MORE_INFO));
-                        }
+                }
+            };
+            cell.setOnMousePressed(arg01 -> {
+                final ScenicViewEvent newValue = table.getSelectionModel().getSelectedItem();
+                if (newValue != null) {
+                    final StringBuilder sb = new StringBuilder();
+                    for (int i = 0; i < newValue.stackTrace.length; i++) {
+                        sb.append(newValue.stackTrace[i]).append('\n');
                     }
-                };
-                cell.setOnMousePressed(new EventHandler<MouseEvent>() {
-                    @Override public void handle(final MouseEvent arg0) {
-                        final ScenicViewEvent newValue = table.getSelectionModel().getSelectedItem();
-                        if (newValue != null) {
-                            final StringBuilder sb = new StringBuilder();
-                            for (int i = 0; i < newValue.stackTrace.length; i++) {
-                                sb.append(newValue.stackTrace[i]).append('\n');
-                            }
-                            new InfoBox("Event Stacktrace", newValue.toString(), sb.toString());
-                        }
+                    new InfoBox("Event Stacktrace", newValue.toString(), sb.toString());
+                }
 
-                    }
-                });
-                return cell;
-            }
+            });
+            return cell;
         });
         moreInfoCol.setPrefWidth(MORE_INFO.getWidth() + 12);
         moreInfoCol.setResizable(false);
@@ -168,33 +148,21 @@ public class EventLogTab extends Tab implements ContextMenuContainer {
         idFilterField = new FilterTextField();
         idFilterField.setMinHeight(Region.USE_PREF_SIZE);
         idFilterField.setPromptText("Insert text to filter (logical operations supported)");
-        idFilterField.focusedProperty().addListener(new ChangeListener<Boolean>() {
-
-            @Override public void changed(final ObservableValue<? extends Boolean> arg0, final Boolean arg1, final Boolean newValue) {
-                if (newValue)
-                    scenicView.setStatusText("Type any text for filtering (logical expressions NOT AND and OR are supported, example NOT MOUSE_MOVED AND TilePane)");
-                else
-                    scenicView.clearStatusText();
-            }
+        idFilterField.focusedProperty().addListener((arg0, arg1, newValue) -> {
+            if (newValue)
+                scenicView.setStatusText("Type any text for filtering (logical expressions NOT AND and OR are supported, example NOT MOUSE_MOVED AND TilePane)");
+            else
+                scenicView.clearStatusText();
         });
-        idFilterField.getTextField().setOnKeyReleased(new EventHandler<KeyEvent>() {
-            @Override public void handle(final KeyEvent arg0) {
-                applyFilter();
-            }
-        });
-        idFilterField.setOnButtonClick(new Runnable() {
-            @Override public void run() {
-                idFilterField.setText("");
-                applyFilter();
-            }
+        idFilterField.getTextField().setOnKeyReleased(arg0 -> applyFilter());
+        idFilterField.setOnButtonClick(() -> {
+            idFilterField.setText("");
+            applyFilter();
         });
 
-        activateTrace.selectedProperty().addListener(new ChangeListener<Boolean>() {
-
-            @Override public void changed(final ObservableValue<? extends Boolean> arg0, final Boolean arg1, final Boolean arg2) {
-                setSelectedNode(selectedNode);
-                scenicView.update();
-            }
+        activateTrace.selectedProperty().addListener((arg0, arg1, arg2) -> {
+            setSelectedNode(selectedNode);
+            scenicView.update();
         });
         /**
          * This is an ugly fix for what I think is a bug of the gridPane
@@ -212,7 +180,7 @@ public class EventLogTab extends Tab implements ContextMenuContainer {
 
         vbox.getChildren().addAll(filtersGridPane, table);
         VBox.setVgrow(table, Priority.ALWAYS);
-        
+
         return vbox;
     }
 
@@ -296,16 +264,14 @@ public class EventLogTab extends Tab implements ContextMenuContainer {
         return valid;
     }
 
-    @Override public Menu getMenu() {
+    @Override
+    public Menu getMenu() {
         if (menu == null) {
             menu = new Menu("Events");
             final MenuItem clear = new MenuItem("Clear events");
-            clear.setOnAction(new EventHandler<ActionEvent>() {
-
-                @Override public void handle(final ActionEvent arg0) {
-                    events.clear();
-                    filteredEvents.clear();
-                }
+            clear.setOnAction(arg0 -> {
+                events.clear();
+                filteredEvents.clear();
             });
             menu.getItems().addAll(activateTrace, clear);
         }
@@ -328,9 +294,9 @@ public class EventLogTab extends Tab implements ContextMenuContainer {
 
     private void applyFilter() {
         final List<ScenicViewEvent> events = new ArrayList<>();
-        for (int i = 0; i < EventLogTab.this.events.size(); i++) {
-            if (validForFilter(EventLogTab.this.events.get(i))) {
-                events.add(EventLogTab.this.events.get(i));
+        for (ScenicViewEvent event : EventLogTab.this.events) {
+            if (validForFilter(event)) {
+                events.add(event);
             }
         }
         EventLogTab.this.filteredEvents.setAll(events);
@@ -393,7 +359,8 @@ public class EventLogTab extends Tab implements ContextMenuContainer {
             this.relative = relative;
         }
 
-        @Override public String toString() {
+        @Override
+        public String toString() {
             return "Event [source=" + source + ", eventType=" + eventType + ((eventValue != null && !eventValue.equals("")) ? (", eventValue=" + eventValue) : "") + ", moment=" + moment + "]";
         }
 

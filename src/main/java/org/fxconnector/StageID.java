@@ -1,6 +1,6 @@
 /*
- * Scenic View, 
- * Copyright (C) 2012 Jonathan Giles, Ander Ruiz, Amy Fowler 
+ * Scenic View,
+ * Copyright (C) 2012 Jonathan Giles, Ander Ruiz, Amy Fowler
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,60 +21,61 @@ import java.io.Serializable;
 
 public final class StageID implements Serializable {
 
-    /**
-     * 
-     */
-    private static final long serialVersionUID = 1091256426733557091L;
-    private final int appID;
-    private final int stageID;
-    private String name;
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = 1091256426733557091L;
+	private final int appID;
+	private final int stageID;
+	private String name;
 
-    public StageID(final int appID, final int stageID) {
-        this.appID = appID;
-        this.stageID = stageID;
-    }
+	public StageID(final int appID, final int stageID) {
+		this.appID = appID;
+		this.stageID = stageID;
+	}
 
-    public int getAppID() {
-        return appID;
-    }
+	public int getAppID() {
+		return appID;
+	}
 
-    public int getStageID() {
-        return stageID;
-    }
+	public int getStageID() {
+		return stageID;
+	}
 
-    @Override public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + appID;
-        result = prime * result + stageID;
-        return result;
-    }
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + appID;
+		result = prime * result + stageID;
+		return result;
+	}
 
-    @Override public boolean equals(final Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        final StageID other = (StageID) obj;
-        if (appID != other.appID)
-            return false;
-        if (stageID != other.stageID)
-            return false;
-        return true;
-    }
+	@Override
+	public boolean equals(final Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		final StageID other = (StageID) obj;
+		if (appID != other.appID)
+			return false;
+		return stageID == other.stageID;
+	}
 
-    public String getName() {
-        return name;
-    }
+	public String getName() {
+		return name;
+	}
 
-    public void setName(final String name) {
-        this.name = name;
-    }
+	public void setName(final String name) {
+		this.name = name;
+	}
 
-    @Override public String toString() {
-        return "StageID [appID=" + appID + ", stageID=" + stageID + ", name=" + name + "]";
-    }
+	@Override
+	public String toString() {
+		return "StageID [appID=" + appID + ", stageID=" + stageID + ", name=" + name + "]";
+	}
 
 }

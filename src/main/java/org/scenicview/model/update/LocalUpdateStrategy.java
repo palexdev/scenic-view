@@ -1,6 +1,6 @@
 /*
- * Scenic View, 
- * Copyright (C) 2012 Jonathan Giles, Ander Ruiz, Amy Fowler 
+ * Scenic View,
+ * Copyright (C) 2012 Jonathan Giles, Ander Ruiz, Amy Fowler
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,28 +17,30 @@
  */
 package org.scenicview.model.update;
 
-import java.util.List;
-
 import org.fxconnector.AppController;
+
+import java.util.List;
 
 /**
  * This strategy will be used when we are showing only one stage
  */
 public class LocalUpdateStrategy implements UpdateStrategy {
 
-    List<AppController> controller;
+	final List<AppController> controller;
 
-    public LocalUpdateStrategy(final List<AppController> controller) {
-        this.controller = controller;
-    }
+	public LocalUpdateStrategy(final List<AppController> controller) {
+		this.controller = controller;
+	}
 
-    @Override public void start(final AppsRepository repository) {
-        for (int i = 0; i < controller.size(); i++) {
-            repository.appAdded(controller.get(i));
-        }
-    }
+	@Override
+	public void start(final AppsRepository repository) {
+		for (AppController appController : controller) {
+			repository.appAdded(appController);
+		}
+	}
 
-    @Override public void finish() {
+	@Override
+	public void finish() {
 
-    }
+	}
 }

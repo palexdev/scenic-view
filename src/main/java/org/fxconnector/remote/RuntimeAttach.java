@@ -1,5 +1,5 @@
 /*
- * Scenic View, 
+ * Scenic View,
  * Copyright (C) 2012 Jonathan Giles, Ander Ruiz, Amy Fowler, Matthieu Brouillard
  *
  * This program is free software: you can redistribute it and/or modify
@@ -17,237 +17,198 @@
  */
 package org.fxconnector.remote;
 
-import java.lang.instrument.Instrumentation;
-import java.rmi.RemoteException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.function.Consumer;
-
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.scene.Parent;
 import javafx.stage.Stage;
 import javafx.stage.Window;
-
-import org.fxconnector.AppControllerImpl;
-import org.fxconnector.Configuration;
-import org.fxconnector.ConnectorUtils;
-import org.fxconnector.StageController;
-import org.fxconnector.StageControllerImpl;
-import org.fxconnector.StageID;
+import org.fxconnector.*;
 import org.fxconnector.details.DetailPaneType;
 import org.fxconnector.event.FXConnectorEventDispatcher;
-import org.fxconnector.helper.FXUtils;
 import org.fxconnector.node.SVNode;
-import org.scenicview.extensions.cssfx.module.api.CSSFXEvent;
-import org.scenicview.extensions.cssfx.module.api.CSSFXEvent.EventType;
-import org.scenicview.extensions.cssfx.module.api.URIToPathConverters;
-import org.scenicview.extensions.cssfx.module.impl.CSSFXMonitor;
-import org.scenicview.extensions.cssfx.module.impl.log.CSSFXLogger;
-import org.scenicview.extensions.cssfx.module.impl.log.CSSFXLogger.LogLevel;
 import org.scenicview.utils.ExceptionLogger;
+
+import java.lang.instrument.Instrumentation;
+import java.rmi.RemoteException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class RuntimeAttach {
 
-    private static boolean debug = true;
-    private static RemoteApplicationImpl application;
+	private static boolean debug = true;
+	private static RemoteApplicationImpl application;
 
-    public static void agentmain(final String agentArgs, final Instrumentation instrumentation) {
-        init(agentArgs, instrumentation);
-    }
+	public static void agentmain(final String agentArgs, final Instrumentation instrumentation) {
+		init(agentArgs, instrumentation);
+	}
 
-    private static void init(final String agentArgs, final Instrumentation instrumentation) {
-        /**
-         * Do it first to see first trace, this should be change if any other
-         * boolean argument is included in the future
-         */
-        debug = agentArgs.indexOf("true") != -1;
-        debug("Launching agent server on:" + agentArgs);
+	private static void init(final String agentArgs, final Instrumentation instrumentation) {
+		/**
+		 * Do it first to see first trace, this should be change if any other
+		 * boolean argument is included in the future
+		 */
+		debug = agentArgs.indexOf("true") != -1;
+		debug("Launching agent server on:" + agentArgs);
 
-        if (debug) {
-            CSSFXLogger.console();
-            CSSFXLogger.setLogLevel(LogLevel.INFO);
-        } else {
-            CSSFXLogger.noop();
-        }
+		try {
+			final String[] args = agentArgs.split(":");
 
-        try {
-            final String[] args = agentArgs.split(":");
+			final int port = Integer.parseInt(args[0]);
+			final int serverPort = Integer.parseInt(args[1]);
+			final int appID = Integer.parseInt(args[2]);
+			debug = Boolean.parseBoolean(args[3]);
+			final AppControllerImpl acontroller = new AppControllerImpl(appID, args[2]);
 
-            final int port = Integer.parseInt(args[0]);
-            final int serverPort = Integer.parseInt(args[1]);
-            final int appID = Integer.parseInt(args[2]);
-            debug = Boolean.parseBoolean(args[3]);
-            final AppControllerImpl acontroller = new AppControllerImpl(appID, args[2]);
+			ObservableList<Window> applicationWindows = FXCollections.observableArrayList();
 
-            final CSSFXMonitor cssMonitor = new CSSFXMonitor();
-            cssMonitor.addAllConverters(URIToPathConverters.DEFAULT_CONVERTERS);
-            ObservableList<Window> applicationWindows = FXCollections.observableArrayList();
-            cssMonitor.setWindows(applicationWindows);
+			final RemoteApplication application = new RemoteApplication() {
+				final List<StageControllerImpl> finded = new ArrayList<>();
+				final List<StageControllerImpl> controller = new ArrayList<>();
 
-            final RemoteApplication application = new RemoteApplication() {
-                final List<StageControllerImpl> finded = new ArrayList<>();
-                final List<StageControllerImpl> controller = new ArrayList<>();
+				@Override
+				public void update(final StageID id) {
+					Platform.runLater(() -> getSC(id).update());
+				}
 
-                @Override public void update(final StageID id) {
-                    Platform.runLater(() -> getSC(id).update());
-                }
+				@Override
+				public void configurationUpdated(final StageID id, final Configuration configuration) throws RemoteException {
+					Platform.runLater(() -> getSC(id).configurationUpdated(configuration));
+				}
 
-                @Override public void configurationUpdated(final StageID id, final Configuration configuration) throws RemoteException {
-                    Platform.runLater(() -> getSC(id).configurationUpdated(configuration));
-                }
+				@Override
+				public void setEventDispatcher(final StageID id, final FXConnectorEventDispatcher dispatcher) throws RemoteException {
+					Platform.runLater(() -> {
+						/**
+						 * Move from finded to controllers
+						 */
+						for (StageControllerImpl stageController : finded) {
+							if (stageController.getID().equals(id)) {
+								controller.add(stageController);
+								break;
+							}
+						}
+						getSC(id).setEventDispatcher(dispatcher);
+					});
+				}
 
-                @Override public void setEventDispatcher(final StageID id, final FXConnectorEventDispatcher dispatcher) throws RemoteException {
-                    Platform.runLater(() -> {
-                        /**
-                         * Move from finded to controllers
-                         */
-                        for (int i = 0; i < finded.size(); i++) {
-                            if (finded.get(i).getID().equals(id)) {
-                                controller.add(finded.get(i));
-                                break;
-                            }
-                        }
-                        getSC(id).setEventDispatcher(dispatcher);
+				@Override
+				public StageID[] getStageIDs() throws RemoteException {
+					finded.clear();
 
-                        if (getSC(id) instanceof StageControllerImpl) {
-                            // Now there is a dispatcher, we can notify existing monitored CSS
-                            StageControllerImpl sci = (StageControllerImpl) getSC(id);
+					ObservableList<Window> windows = Window.getWindows();
+					for (Window window : windows) {
+						if (ConnectorUtils.acceptWindow(window)) {
+							debug("Local JavaFX Stage found:" + ((Stage) window).getTitle());
+							final StageControllerImpl scontroller = new StageControllerImpl((Stage) window, acontroller);
+							scontroller.setRemote(true);
+							finded.add(scontroller);
+							if (!applicationWindows.contains(window)) {
+								applicationWindows.add(window);
+							}
+						}
+					}
 
-                            Consumer<CSSFXEvent<?>> sciEventListener = sci.getCSSFXEventListener();
-                            cssMonitor.allKnownStylesheets().stream().filter(t -> {
-                                Parent p = FXUtils.parentOf(t.getParent());
-                                if (p == null && t.getScene() != null) {
-                                    p = t.getScene().getRoot();
-                                }
-                                
-                                final int stageRootID = sci.getID().getStageID();
-                                final int hashCode = p.hashCode();
-                                // TODO weakness: stages/window are identified with root of scene (that can change)
-                                return (stageRootID == hashCode);
-                            }).forEach(ms -> sciEventListener.accept(CSSFXEvent.newEvent(EventType.STYLESHEET_MONITORED, ms)));
-                        }
-                    });
-                }
+					final StageID[] ids = new StageID[finded.size()];
+					for (int i = 0; i < ids.length; i++) {
+						ids[i] = finded.get(i).getID();
+					}
+					return ids;
+				}
 
-                @Override public StageID[] getStageIDs() throws RemoteException {
-                    finded.clear();
+				@Override
+				public void close(final StageID id) throws RemoteException {
+					Platform.runLater(() -> {
+						/**
+						 * Special for closing the server
+						 */
+						if (id == null) {
+							for (StageControllerImpl stageController : controller) {
+								stageController.close();
+							}
+							controller.clear();
+						} else {
+							final StageController c = getSC(id, true);
+							if (c instanceof StageControllerImpl sci) {
+							}
+							if (c != null) {
+								c.close();
+							}
+						}
+					});
+				}
 
-                    ObservableList<Window> windows = Window.getWindows();
-                    for (Window window : windows) {
-                        if (ConnectorUtils.acceptWindow(window)) {
-                            debug("Local JavaFX Stage found:" + ((Stage) window).getTitle());
-                            final StageControllerImpl scontroller = new StageControllerImpl((Stage) window, acontroller);
-                            scontroller.setRemote(true);
-                            finded.add(scontroller);
-                            if (!applicationWindows.contains(window)) {
-                                final Consumer<CSSFXEvent<?>> cssfxEventListener = scontroller.getCSSFXEventListener();
-                                cssMonitor.addEventListener(cssfxEventListener);
-                                applicationWindows.add(window);
-                            }
-                        }
-                    }
+				@Override
+				public void setSelectedNode(final StageID id, final SVNode value) throws RemoteException {
+					Platform.runLater(() -> {
+						debug("Setting selected node:" + (value != null ? (" id:" + value.getNodeId() + " class:" + value.getClass()) : ""));
+						final StageController sc = getSC(id);
+						if (sc != null)
+							sc.setSelectedNode(value);
+					});
+				}
 
-                    final StageID[] ids = new StageID[finded.size()];
-                    for (int i = 0; i < ids.length; i++) {
-                        ids[i] = finded.get(i).getID();
-                    }
-                    return ids;
-                }
+				@Override
+				public void removeSelectedNode(final StageID id) throws RemoteException {
+					Platform.runLater(() -> {
+						final StageController sc = getSC(id);
+						if (sc != null)
+							sc.removeSelectedNode();
+					});
+				}
 
-                @Override public void close(final StageID id) throws RemoteException {
-                    Platform.runLater(() -> {
-                        /**
-                         * Special for closing the server
-                         */
-                        if (id == null) {
-                            cssMonitor.stop();
-                            for (int i = 0; i < controller.size(); i++) {
-                                controller.get(i).close();
-                            }
-                            controller.clear();
-                        } else {
-                            final StageController c = getSC(id, true);
-                            if (c instanceof StageControllerImpl) {
-                                StageControllerImpl sci = (StageControllerImpl) c;
-                                cssMonitor.removeEventListener(sci.getCSSFXEventListener());
-                            }
-                            if (c != null) {
-                                c.close();
-                            }
-                        }
-                    });
-                }
+				@Override
+				public void setDetail(final StageID id, final DetailPaneType detailType, final int detailID, final String value) {
+					Platform.runLater(() -> getSC(id).setDetail(detailType, detailID, value));
+				}
 
-                @Override public void setSelectedNode(final StageID id, final SVNode value) throws RemoteException {
-                    Platform.runLater(() -> {
-                        debug("Setting selected node:" + (value != null ? (" id:" + value.getNodeId() + " class:" + value.getClass()) : ""));
-                        final StageController sc = getSC(id);
-                        if (sc != null)
-                            sc.setSelectedNode(value);
-                    });
-                }
+				@Override
+				public void animationsEnabled(final StageID id, final boolean enabled) throws RemoteException {
+					Platform.runLater(() -> getSC(id).animationsEnabled(enabled));
+				}
 
-                @Override public void removeSelectedNode(final StageID id) throws RemoteException {
-                    Platform.runLater(() -> {
-                        final StageController sc = getSC(id);
-                        if (sc != null)
-                            sc.removeSelectedNode();
-                    });
-                }
+				@Override
+				public void updateAnimations(final StageID id) throws RemoteException {
+					Platform.runLater(() -> getSC(id).updateAnimations());
+				}
 
-                @Override public void setDetail(final StageID id, final DetailPaneType detailType, final int detailID, final String value) {
-                    Platform.runLater(() -> getSC(id).setDetail(detailType, detailID, value));
-                }
+				@Override
+				public void pauseAnimation(final StageID id, final int animationID) throws RemoteException {
+					Platform.runLater(() -> getSC(id).pauseAnimation(animationID));
+				}
 
-                @Override public void animationsEnabled(final StageID id, final boolean enabled) throws RemoteException {
-                    Platform.runLater(() -> getSC(id).animationsEnabled(enabled));
-                }
+				private StageController getSC(final StageID id) {
+					return getSC(id, false);
+				}
 
-                @Override public void updateAnimations(final StageID id) throws RemoteException {
-                    Platform.runLater(() -> getSC(id).updateAnimations());
-                }
+				private StageController getSC(final StageID id, final boolean remove) {
+					for (int i = 0; i < controller.size(); i++) {
+						if (controller.get(i).getID().equals(id)) {
+							if (remove) {
+								return controller.remove(i);
+							} else {
+								return controller.get(i);
+							}
+						}
+					}
+					return null;
+				}
 
-                @Override public void pauseAnimation(final StageID id, final int animationID) throws RemoteException {
-                    Platform.runLater(() -> getSC(id).pauseAnimation(animationID));
-                }
+				@Override
+				public void close() throws RemoteException {
+					RuntimeAttach.application.close();
+				}
+			};
 
-                private StageController getSC(final StageID id) {
-                    return getSC(id, false);
-                }
+			debug = false;
+			RuntimeAttach.application = new RemoteApplicationImpl(application, port, serverPort);
+		} catch (final RemoteException e) {
+			ExceptionLogger.submitException(e);
+		}
+	}
 
-                private StageController getSC(final StageID id, final boolean remove) {
-                    for (int i = 0; i < controller.size(); i++) {
-                        if (controller.get(i).getID().equals(id)) {
-                            if (remove) {
-                                return controller.remove(i);
-                            } else {
-                                return controller.get(i);
-                            }
-                        }
-                    }
-                    return null;
-                }
-
-                @Override
-                public void close() throws RemoteException {
-                    RuntimeAttach.application.close();
-                }
-            };
-
-            debug = false;
-            RuntimeAttach.application = new RemoteApplicationImpl(application, port, serverPort);
-            cssMonitor.start();
-        } catch (final RemoteException e) {
-            ExceptionLogger.submitException(e);
-        }
-    }
-
-    private static void debug(String msg) {
-        if (debug) {
-            System.out.println(msg);
-        }
-    }
+	private static void debug(String msg) {
+		if (debug) {
+			System.out.println(msg);
+		}
+	}
 }

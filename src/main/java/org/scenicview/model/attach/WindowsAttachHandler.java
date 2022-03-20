@@ -1,6 +1,6 @@
 /*
- * Scenic View, 
- * Copyright (C) 2013 Jonathan Giles, Ander Ruiz, Amy Fowler 
+ * Scenic View,
+ * Copyright (C) 2013 Jonathan Giles, Ander Ruiz, Amy Fowler
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,5 +23,5 @@ package org.scenicview.model.attach;
  */
 public class WindowsAttachHandler extends AttachHandlerBase {
 
-    
+
 }

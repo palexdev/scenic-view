@@ -1,6 +1,6 @@
 /*
- * Scenic View, 
- * Copyright (C) 2012 Jonathan Giles, Ander Ruiz, Amy Fowler 
+ * Scenic View,
+ * Copyright (C) 2012 Jonathan Giles, Ander Ruiz, Amy Fowler
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,56 +17,55 @@
  */
 package org.fxconnector.node;
 
-import java.util.List;
-
 import javafx.scene.Node;
 import javafx.scene.image.Image;
 
+import java.util.List;
+
 public interface SVNode {
 
-    String getId();
+	String getId();
 
-    String getNodeClassName();
+	String getNodeClassName();
 
-    String getNodeClass();
+	String getNodeClass();
 
-    String getExtendedId();
+	String getExtendedId();
 
-    SVNode getParent();
+	SVNode getParent();
 
-    List<SVNode> getChildren();
+	List<SVNode> getChildren();
 
-    boolean equals(SVNode node);
+	boolean equals(SVNode node);
 
-    Node getImpl();
+	Node getImpl();
 
-    int getNodeId();
+	int getNodeId();
 
-    boolean isVisible();
+	boolean isVisible();
 
-    boolean isMouseTransparent();
+	boolean isMouseTransparent();
 
-    boolean isFocused();
+	boolean isFocused();
 
-    boolean isRealNode();
+	boolean isRealNode();
 
-    /**
-     * I'm not sure about this three methods...
-     * 
-     */
+	/**
+	 * I'm not sure about this three methods...
+	 */
 
-    void setInvalidForFilter(boolean invalid);
+	void setInvalidForFilter(boolean invalid);
 
-    boolean isInvalidForFilter();
+	boolean isInvalidForFilter();
 
-    void setShowId(boolean showId);
+	void setShowId(boolean showId);
 
-    boolean isExpanded();
+	boolean isExpanded();
 
-    void setExpanded(boolean expanded);
+	void setExpanded(boolean expanded);
 
-    Image getIcon();
+	Image getIcon();
 
-    public NodeType getNodeType();
+	NodeType getNodeType();
 
 }

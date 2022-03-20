@@ -1,6 +1,6 @@
 /*
- * Scenic View, 
- * Copyright (C) 2014, Jonathan Giles, Ander Ruiz, Amy Fowler 
+ * Scenic View,
+ * Copyright (C) 2014, Jonathan Giles, Ander Ruiz, Amy Fowler
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,17 +25,18 @@ import javafx.scene.SubScene;
 
 public class ChildrenGetter {
 
-    private ChildrenGetter() { }
-    
-    public static ObservableList<Node> getChildren(Node node) {
-        if (node == null) return FXCollections.emptyObservableList();
-        
-        if (node instanceof Parent) {
-            return ((Parent)node).getChildrenUnmodifiable();
-        } else if (node instanceof SubScene) {
-            return ((SubScene)node).getRoot().getChildrenUnmodifiable();
-        }
-        
-        return FXCollections.emptyObservableList();
-    }
+	private ChildrenGetter() {
+	}
+
+	public static ObservableList<Node> getChildren(Node node) {
+		if (node == null) return FXCollections.emptyObservableList();
+
+		if (node instanceof Parent) {
+			return ((Parent) node).getChildrenUnmodifiable();
+		} else if (node instanceof SubScene) {
+			return ((SubScene) node).getRoot().getChildrenUnmodifiable();
+		}
+
+		return FXCollections.emptyObservableList();
+	}
 }

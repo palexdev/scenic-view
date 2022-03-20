@@ -1,6 +1,6 @@
 /*
- * Scenic View, 
- * Copyright (C) 2012 Jonathan Giles, Ander Ruiz, Amy Fowler 
+ * Scenic View,
+ * Copyright (C) 2012 Jonathan Giles, Ander Ruiz, Amy Fowler
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,19 +21,19 @@ import org.fxconnector.StageID;
 
 public class MousePosEvent extends FXConnectorEvent {
 
-    /**
-     * 
-     */
-    private static final long serialVersionUID = -3472298445464561790L;
-    private final String position;
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = -3472298445464561790L;
+	private final String position;
 
-    public MousePosEvent(final StageID id, final String position) {
-        super(SVEventType.MOUSE_POSITION, id);
-        this.position = position;
-    }
+	public MousePosEvent(final StageID id, final String position) {
+		super(SVEventType.MOUSE_POSITION, id);
+		this.position = position;
+	}
 
-    public String getPosition() {
-        return position;
-    }
+	public String getPosition() {
+		return position;
+	}
 
 }

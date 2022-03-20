@@ -1,6 +1,6 @@
 /*
- * Scenic View, 
- * Copyright (C) 2013 Jonathan Giles, Ander Ruiz, Amy Fowler 
+ * Scenic View,
+ * Copyright (C) 2013 Jonathan Giles, Ander Ruiz, Amy Fowler
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,18 +27,20 @@ import static org.scenicview.model.attach.AttachHandlerFactory.doBasicJdkSearch;
  */
 public class AttachHandlerBase implements AttachHandler {
 
-    @Override public void getOrderedJDKPaths(List<JDKToolsJarPair> jdkPaths) {
-        doBasicJdkSearch(jdkPaths);
-    }
+	@Override
+	public void getOrderedJDKPaths(List<JDKToolsJarPair> jdkPaths) {
+		doBasicJdkSearch(jdkPaths);
+	}
 
-    @Override public File resolveToolsJarPath(JDKToolsJarPair jdkPath) {
-        // TODO
-        // For now we assume tools.jar is in the lib/ folder beneath the jdk
-        // folder
-        File toolsJarPath = new File(jdkPath.getJdkPath(), "lib/tools.jar");
-        if (! toolsJarPath.exists()) {
-            // FIXME
-        }
-        return toolsJarPath;
-    }
+	@Override
+	public File resolveToolsJarPath(JDKToolsJarPair jdkPath) {
+		// TODO
+		// For now we assume tools.jar is in the lib/ folder beneath the jdk
+		// folder
+		File toolsJarPath = new File(jdkPath.getJdkPath(), "lib/tools.jar");
+		if (!toolsJarPath.exists()) {
+			// FIXME
+		}
+		return toolsJarPath;
+	}
 }

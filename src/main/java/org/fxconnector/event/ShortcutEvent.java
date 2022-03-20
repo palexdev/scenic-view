@@ -1,6 +1,6 @@
 /*
- * Scenic View, 
- * Copyright (C) 2012 Jonathan Giles, Ander Ruiz, Amy Fowler 
+ * Scenic View,
+ * Copyright (C) 2012 Jonathan Giles, Ander Ruiz, Amy Fowler
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,24 +18,23 @@
 package org.fxconnector.event;
 
 import javafx.scene.input.KeyCode;
-
 import org.fxconnector.StageID;
 
 public class ShortcutEvent extends FXConnectorEvent {
 
-    /**
-     * 
-     */
-    private static final long serialVersionUID = -2848778452928775515L;
-    private final KeyCode code;
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = -2848778452928775515L;
+	private final KeyCode code;
 
-    public ShortcutEvent(final StageID id, final KeyCode code) {
-        super(SVEventType.SHORTCUT, id);
-        this.code = code;
-    }
+	public ShortcutEvent(final StageID id, final KeyCode code) {
+		super(SVEventType.SHORTCUT, id);
+		this.code = code;
+	}
 
-    public KeyCode getCode() {
-        return code;
-    }
+	public KeyCode getCode() {
+		return code;
+	}
 
 }

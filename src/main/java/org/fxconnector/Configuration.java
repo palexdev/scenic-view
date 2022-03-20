@@ -1,6 +1,6 @@
 /*
- * Scenic View, 
- * Copyright (C) 2012 Jonathan Giles, Ander Ruiz, Amy Fowler 
+ * Scenic View,
+ * Copyright (C) 2012 Jonathan Giles, Ander Ruiz, Amy Fowler
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,166 +21,167 @@ import java.io.Serializable;
 
 public final class Configuration implements Serializable {
 
-    /**
-     * 
-     */
-    private static final long serialVersionUID = -9086033764395754103L;
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = -9086033764395754103L;
 
-    private boolean showBounds;
+	private boolean showBounds;
 
-    private boolean showBaseline;
+	private boolean showBaseline;
 
-    private boolean showRuler;
+	private boolean showRuler;
 
-    private int rulerSeparation;
+	private int rulerSeparation;
 
-    private String rulerColor = "000000";
+	private String rulerColor = "000000";
 
-    private boolean eventLogEnabled;
+	private boolean eventLogEnabled;
 
-    private boolean autoRefreshStyles;
+	private boolean autoRefreshStyles;
 
-    private boolean ignoreMouseTransparent;
+	private boolean ignoreMouseTransparent;
 
-    private boolean collapseControls;
+	private boolean collapseControls;
 
-    private boolean collapseContentControls;
+	private boolean collapseContentControls;
 
-    private boolean autoRefreshSceneGraph;
+	private boolean autoRefreshSceneGraph;
 
-    private boolean visibilityFilteringActive;
+	private boolean visibilityFilteringActive;
 
-    private boolean CSSPropertiesDetail;
+	private boolean CSSPropertiesDetail;
 
-    /**
-     * I'm not totally sure about this...
-     */
-    private boolean componentSelectOnClick;
+	/**
+	 * I'm not totally sure about this...
+	 */
+	private boolean componentSelectOnClick;
 
-    private boolean registerShortcuts;
+	private boolean registerShortcuts;
 
-    public boolean isShowBounds() {
-        return showBounds;
-    }
+	public boolean isShowBounds() {
+		return showBounds;
+	}
 
-    public void setShowBounds(final boolean showBounds) {
-        this.showBounds = showBounds;
-    }
+	public void setShowBounds(final boolean showBounds) {
+		this.showBounds = showBounds;
+	}
 
-    public boolean isShowBaseline() {
-        return showBaseline;
-    }
+	public boolean isShowBaseline() {
+		return showBaseline;
+	}
 
-    public void setShowBaseline(final boolean showBaseline) {
-        this.showBaseline = showBaseline;
-    }
+	public void setShowBaseline(final boolean showBaseline) {
+		this.showBaseline = showBaseline;
+	}
 
-    public boolean isEventLogEnabled() {
-        return eventLogEnabled;
-    }
+	public boolean isEventLogEnabled() {
+		return eventLogEnabled;
+	}
 
-    public void setEventLogEnabled(final boolean eventLogEnabled) {
-        this.eventLogEnabled = eventLogEnabled;
-    }
+	public void setEventLogEnabled(final boolean eventLogEnabled) {
+		this.eventLogEnabled = eventLogEnabled;
+	}
 
-    public boolean isShowRuler() {
-        return showRuler;
-    }
+	public boolean isShowRuler() {
+		return showRuler;
+	}
 
-    public void setShowRuler(final boolean showRuler) {
-        this.showRuler = showRuler;
-    }
+	public void setShowRuler(final boolean showRuler) {
+		this.showRuler = showRuler;
+	}
 
-    public int getRulerSeparation() {
-        return rulerSeparation;
-    }
+	public int getRulerSeparation() {
+		return rulerSeparation;
+	}
 
-    public void setRulerSeparation(final int rulerSeparation) {
-        this.rulerSeparation = rulerSeparation;
-    }
+	public void setRulerSeparation(final int rulerSeparation) {
+		this.rulerSeparation = rulerSeparation;
+	}
 
-    public boolean isAutoRefreshStyles() {
-        return autoRefreshStyles;
-    }
+	public boolean isAutoRefreshStyles() {
+		return autoRefreshStyles;
+	}
 
-    public void setAutoRefreshStyles(final boolean autoRefreshStyles) {
-        this.autoRefreshStyles = autoRefreshStyles;
-    }
+	public void setAutoRefreshStyles(final boolean autoRefreshStyles) {
+		this.autoRefreshStyles = autoRefreshStyles;
+	}
 
-    public boolean isIgnoreMouseTransparent() {
-        return ignoreMouseTransparent;
-    }
+	public boolean isIgnoreMouseTransparent() {
+		return ignoreMouseTransparent;
+	}
 
-    public void setIgnoreMouseTransparent(final boolean ignoreMouseTransparent) {
-        this.ignoreMouseTransparent = ignoreMouseTransparent;
-    }
+	public void setIgnoreMouseTransparent(final boolean ignoreMouseTransparent) {
+		this.ignoreMouseTransparent = ignoreMouseTransparent;
+	}
 
-    public boolean isCollapseControls() {
-        return collapseControls;
-    }
+	public boolean isCollapseControls() {
+		return collapseControls;
+	}
 
-    public void setCollapseControls(final boolean collapseControls) {
-        this.collapseControls = collapseControls;
-    }
+	public void setCollapseControls(final boolean collapseControls) {
+		this.collapseControls = collapseControls;
+	}
 
-    public boolean isCollapseContentControls() {
-        return collapseContentControls;
-    }
+	public boolean isCollapseContentControls() {
+		return collapseContentControls;
+	}
 
-    public void setCollapseContentControls(final boolean collapseContentControls) {
-        this.collapseContentControls = collapseContentControls;
-    }
+	public void setCollapseContentControls(final boolean collapseContentControls) {
+		this.collapseContentControls = collapseContentControls;
+	}
 
-    public boolean isAutoRefreshSceneGraph() {
-        return autoRefreshSceneGraph;
-    }
+	public boolean isAutoRefreshSceneGraph() {
+		return autoRefreshSceneGraph;
+	}
 
-    public void setAutoRefreshSceneGraph(final boolean autoRefreshSceneGraph) {
-        this.autoRefreshSceneGraph = autoRefreshSceneGraph;
-    }
+	public void setAutoRefreshSceneGraph(final boolean autoRefreshSceneGraph) {
+		this.autoRefreshSceneGraph = autoRefreshSceneGraph;
+	}
 
-    public boolean isVisibilityFilteringActive() {
-        return visibilityFilteringActive;
-    }
+	public boolean isVisibilityFilteringActive() {
+		return visibilityFilteringActive;
+	}
 
-    public void setVisibilityFilteringActive(final boolean visibilityFilteringActive) {
-        this.visibilityFilteringActive = visibilityFilteringActive;
-    }
+	public void setVisibilityFilteringActive(final boolean visibilityFilteringActive) {
+		this.visibilityFilteringActive = visibilityFilteringActive;
+	}
 
-    public boolean isComponentSelectOnClick() {
-        return componentSelectOnClick;
-    }
+	public boolean isComponentSelectOnClick() {
+		return componentSelectOnClick;
+	}
 
-    public void setComponentSelectOnClick(final boolean componentSelectOnClick) {
-        this.componentSelectOnClick = componentSelectOnClick;
-    }
+	public void setComponentSelectOnClick(final boolean componentSelectOnClick) {
+		this.componentSelectOnClick = componentSelectOnClick;
+	}
 
-    @Override public String toString() {
-        return "Configuration [showBounds=" + showBounds + ", showBaseline=" + showBaseline + ", showRuler=" + showRuler + ", rulerSeparation=" + rulerSeparation + ", eventLogEnabled=" + eventLogEnabled + ", autoRefreshStyles=" + autoRefreshStyles + ", ignoreMouseTransparent=" + ignoreMouseTransparent + ", collapseControls=" + collapseControls + ", collapseContentControls=" + collapseContentControls + ", autoRefreshSceneGraph=" + autoRefreshSceneGraph + ", visibilityFilteringActive=" + visibilityFilteringActive + ", componentSelectOnClick=" + componentSelectOnClick + "]";
-    }
+	@Override
+	public String toString() {
+		return "Configuration [showBounds=" + showBounds + ", showBaseline=" + showBaseline + ", showRuler=" + showRuler + ", rulerSeparation=" + rulerSeparation + ", eventLogEnabled=" + eventLogEnabled + ", autoRefreshStyles=" + autoRefreshStyles + ", ignoreMouseTransparent=" + ignoreMouseTransparent + ", collapseControls=" + collapseControls + ", collapseContentControls=" + collapseContentControls + ", autoRefreshSceneGraph=" + autoRefreshSceneGraph + ", visibilityFilteringActive=" + visibilityFilteringActive + ", componentSelectOnClick=" + componentSelectOnClick + "]";
+	}
 
-    public boolean isCSSPropertiesDetail() {
-        return CSSPropertiesDetail;
-    }
+	public boolean isCSSPropertiesDetail() {
+		return CSSPropertiesDetail;
+	}
 
-    public void setCSSPropertiesDetail(final boolean cSSPropertiesDetail) {
-        CSSPropertiesDetail = cSSPropertiesDetail;
-    }
+	public void setCSSPropertiesDetail(final boolean cSSPropertiesDetail) {
+		CSSPropertiesDetail = cSSPropertiesDetail;
+	}
 
-    public String getRulerColor() {
-        return rulerColor;
-    }
+	public String getRulerColor() {
+		return rulerColor;
+	}
 
-    public void setRulerColor(final String rulerColor) {
-        this.rulerColor = rulerColor;
-    }
+	public void setRulerColor(final String rulerColor) {
+		this.rulerColor = rulerColor;
+	}
 
-    public void setRegisterShortcuts(final boolean newValue) {
-        this.registerShortcuts = newValue;
-    }
+	public void setRegisterShortcuts(final boolean newValue) {
+		this.registerShortcuts = newValue;
+	}
 
-    public boolean isRegisterShortcuts() {
-        return registerShortcuts;
-    }
+	public boolean isRegisterShortcuts() {
+		return registerShortcuts;
+	}
 
 }

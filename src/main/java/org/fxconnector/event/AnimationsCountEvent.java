@@ -1,6 +1,6 @@
 /*
- * Scenic View, 
- * Copyright (C) 2012 Jonathan Giles, Ander Ruiz, Amy Fowler 
+ * Scenic View,
+ * Copyright (C) 2012 Jonathan Giles, Ander Ruiz, Amy Fowler
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,25 +19,25 @@ package org.fxconnector.event;
 
 import org.fxconnector.SVAnimation;
 import org.fxconnector.StageID;
-import java.util.*;
 
+import java.util.List;
 
 
 public class AnimationsCountEvent extends FXConnectorEvent {
 
-    /**
-     * 
-     */
-    private static final long serialVersionUID = 1245351064842340102L;
-    List<SVAnimation> animations = new ArrayList<>();
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = 1245351064842340102L;
+	List<SVAnimation> animations;
 
-    public AnimationsCountEvent(final StageID id, final List<SVAnimation> animations) {
-        super(SVEventType.ANIMATIONS_UPDATED, id);
-        this.animations = animations;
-    }
+	public AnimationsCountEvent(final StageID id, final List<SVAnimation> animations) {
+		super(SVEventType.ANIMATIONS_UPDATED, id);
+		this.animations = animations;
+	}
 
-    public List<SVAnimation> getAnimations() {
-        return animations;
-    }
+	public List<SVAnimation> getAnimations() {
+		return animations;
+	}
 
 }

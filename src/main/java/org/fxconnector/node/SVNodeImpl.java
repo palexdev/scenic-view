@@ -1,6 +1,6 @@
 /*
- * Scenic View, 
- * Copyright (C) 2012 Jonathan Giles, Ander Ruiz, Amy Fowler 
+ * Scenic View,
+ * Copyright (C) 2012 Jonathan Giles, Ander Ruiz, Amy Fowler
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,61 +17,69 @@
  */
 package org.fxconnector.node;
 
-import java.io.Serializable;
-
 import javafx.scene.image.Image;
+
+import java.io.Serializable;
 
 abstract class SVNodeImpl implements SVNode, Serializable {
 
-    /**
-     * 
-     */
-    private static final long serialVersionUID = -3301868461718461962L;
-    boolean invalidForFilter;
-    boolean showID;
-    boolean expanded;
-    protected String nodeClass;
-    protected String nodeClassName;
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = -3301868461718461962L;
+	boolean invalidForFilter;
+	boolean showID;
+	boolean expanded;
+	protected String nodeClass;
+	protected String nodeClassName;
 
-    protected SVNodeImpl() {
+	protected SVNodeImpl() {
 
-    }
+	}
 
-    protected SVNodeImpl(final String nodeClass, final String nodeClassName) {
-        this.nodeClass = nodeClass;
-        this.nodeClassName = nodeClassName;
-    }
+	protected SVNodeImpl(final String nodeClass, final String nodeClassName) {
+		this.nodeClass = nodeClass;
+		this.nodeClassName = nodeClassName;
+	}
 
-    @Override public final void setInvalidForFilter(final boolean invalid) {
-        this.invalidForFilter = invalid;
-    }
+	@Override
+	public final void setInvalidForFilter(final boolean invalid) {
+		this.invalidForFilter = invalid;
+	}
 
-    @Override public final boolean isInvalidForFilter() {
-        return invalidForFilter;
-    }
+	@Override
+	public final boolean isInvalidForFilter() {
+		return invalidForFilter;
+	}
 
-    @Override public final void setShowId(final boolean showID) {
-        this.showID = showID;
-    }
+	@Override
+	public final void setShowId(final boolean showID) {
+		this.showID = showID;
+	}
 
-    @Override public boolean isExpanded() {
-        return this.expanded;
-    }
+	@Override
+	public boolean isExpanded() {
+		return this.expanded;
+	}
 
-    @Override public final void setExpanded(final boolean expanded) {
-        this.expanded = expanded;
-    }
+	@Override
+	public final void setExpanded(final boolean expanded) {
+		this.expanded = expanded;
+	}
 
-    @Override public Image getIcon() {
-        return null;
-    }
+	@Override
+	public Image getIcon() {
+		return null;
+	}
 
-    @Override public final String getNodeClass() {
-        return nodeClass;
-    }
+	@Override
+	public final String getNodeClass() {
+		return nodeClass;
+	}
 
-    @Override public final String getNodeClassName() {
-        return nodeClassName;
-    }
+	@Override
+	public final String getNodeClassName() {
+		return nodeClassName;
+	}
 
 }
